@@ -38,6 +38,33 @@ class Colorbar(MPLColorbar):
             title_fontproperties: Optional[Dict] = None,
             **colorbar_options,
     ):
+        """
+
+        Parameters
+        ----------
+        mappable
+        vmin
+        vmax
+        clip
+        cmap
+        ax
+        style
+        width
+        height
+        loc
+        bbox_to_anchor
+        bbox_transform
+        axes_class
+        axes_kwargs
+        borderpad
+        orientation
+        title
+        title_align
+        title_fontproperties
+        colorbar_options
+
+        """
+
         if ax is None:
             ax = plt.gca()
         if mappable is None:
@@ -109,6 +136,31 @@ class EllipseColorbar:
             alpha: Optional[float] = None,
             **colorbar_options,
     ):
+        """
+
+        Parameters
+        ----------
+        vmin
+        vmax
+        cmap
+        ax
+        width
+        height
+        loc
+        bbox_to_anchor
+        bbox_transform
+        axes_class
+        axes_kwargs
+        borderpad
+        orientation
+        title
+        title_align
+        title_fontproperties
+        alpha
+        colorbar_options
+
+        """
+
         if ax is None:
             ax = plt.gca()
 

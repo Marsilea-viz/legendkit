@@ -10,12 +10,13 @@ from matplotlib.lines import Line2D
 from matplotlib.offsetbox import VPacker, HPacker
 from matplotlib.patches import Patch
 
-from .handles import SquareItem, RectItem, CircleItem
+from .handles import SquareItem, RectItem, CircleItem, LineItem
 
 _handlers = {
     'square': SquareItem,
     'rect': RectItem,
-    'circle': CircleItem
+    'circle': CircleItem,
+    'line': LineItem
 }
 
 
@@ -71,16 +72,35 @@ class ListLegend(Legend):
                  legend_items: Union[List[Tuple], None] = None,
                  handles: Union[str, Artist, List[str], List[Artist], None] = None,
                  labels: Union[List[str], None] = None,
-                 frameon: bool = False,
+                 style: str = 'none',  # 'none', 'frameless'
                  title_pos: str = "top",  # "top" or "left",
                  title_align: str = "center",
+                 titlepad: float = 0.5,
                  draw: bool = True,
                  handler_map: Optional[Dict] = None,
                  **kwargs,
                  ):
+        """This is a modified class of the original matplotlib class
+
+        Parameters
+        ----------
+        ax
+        legend_items
+        handles
+        labels
+        style
+        title_pos
+        title_align
+        titlepad
+        draw
+        handler_map
+        kwargs
+
+        """
 
         self._title_pos = title_pos
         self._title_align = title_align
+        self.titlepad = titlepad
         self._is_patch = False
 
         legend_handles = []
@@ -107,38 +127,45 @@ class ListLegend(Legend):
                 legend_handles.append(_parse_handler(handle, config=handle_config))
                 legend_labels.append(label)
 
-        if (ax is None) & (legend_items is None):
+        if legend_items is None:
 
-            if handles and labels:
-                # if got both handles and labels as kwargs, make same length (matplotlib source)
-                legend_handles, legend_labels = zip(*zip(handles, labels))
-            elif handles is not None and labels is None:
-                legend_handles = handles
-                legend_labels = [handle.get_label() for handle in handles]
-            elif labels is not None and handles is None:
-                # Get as many handles as there are labels.
-                legend_handles = [handle for handle, label
-                                  in zip(_get_legend_handles([ax], handler_map), labels)]
-            else:
-                raise TypeError("At least one of the following arguments must be specific, "
-                                "`ax`, `legend_items`, `handles`, labels`.")
+            # if handles and labels:
+            #     # if got both handles and labels as kwargs, make same length (matplotlib source)
+            #     legend_handles, legend_labels = zip(*zip(handles, labels))
+            # elif handles is not None and labels is None:
+            #     legend_handles = handles
+            #     legend_labels = [handle.get_label() for handle in handles]
+            # elif labels is not None and handles is None:
+            #     # Get as many handles as there are labels.
+            #     legend_handles = [handle for handle, label
+            #                       in zip(_get_legend_handles([ax], handler_map), labels)]
+            # else:
+            #     raise TypeError("At least one of the following arguments must be specific, "
+            #                     "`ax`, `legend_items`, `handles`, labels`.")
+            legend_handles, legend_labels = handles, labels
 
-        default_kwargs = dict(
+        frameless_options = dict(
             # Dimensions as fraction of font size:
-            # if user open frame, add some border to make it look loosen
-            borderpad=0.4 if frameon else 0,  # 0.4,  # border whitespace
+            frameon=False,
+            borderpad=0,  # 0.4,  # border whitespace
             labelspacing=0.5,  # the vertical space between the legend entries
             handlelength=1.5,  # 2.0,  # the length of the legend lines
             handleheight=1.,  # 0.7,  # the height of the legend handle
             handletextpad=0.4,  # 0.8,  # the space between the legend line and legend text
             borderaxespad=0.,  # 0.5,  # the border between the axes and legend edge
             columnspacing=1.0,  # 2.0,  # column separation
+        )
+
+        default_kwargs = dict(
             title_fontproperties={'weight': 600},  # Make the title bold if user supply no style
             handler_map=handler_map,
-            frameon=frameon
         )
+
+        if style == 'frameless':
+            default_kwargs = {**default_kwargs, **frameless_options}
+
         final_options = {**default_kwargs, **kwargs}
-        super().__init__(ax, legend_handles, legend_labels, **final_options)
+        super().__init__(ax, handles=legend_handles, labels=legend_labels, **final_options)
         self._title_layout()
 
         if draw:
@@ -150,7 +177,7 @@ class ListLegend(Legend):
         title_pos = self._title_pos
 
         pad = self.borderpad * fontsize
-        sep = self.labelspacing * fontsize
+        sep = self.titlepad * fontsize
         # To make positioning of legend title possible by override the default legend box layout
         hpacker = partial(HPacker, pad=pad, sep=sep, align=title_align)
         vpacker = partial(VPacker, pad=pad, sep=sep, align=title_align)
@@ -171,3 +198,24 @@ class ListLegend(Legend):
 
         # call this to maintain consistent behavior as legend
         self._legend_box.set_offset(self._findoffset)
+
+    def set_title(self, title, align=None, prop=None):
+        """
+        Set the legend title. Fontproperties can be optionally set
+        with *prop* parameter.
+        """
+        self._legend_title_box._text.set_text(title)
+        if title:
+            self._legend_title_box._text.set_visible(True)
+            self._legend_title_box.set_visible(True)
+        else:
+            self._legend_title_box._text.set_visible(False)
+            self._legend_title_box.set_visible(False)
+
+        if align is not None:
+            self._legend_box.align = align
+
+        if prop is not None:
+            self._legend_title_box._text.set_fontproperties(prop)
+
+        self.stale = True

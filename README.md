@@ -2,6 +2,8 @@
 <img src="images/legendkit-project.svg">
 </p>
 
+![pypi version](https://img.shields.io/pypi/v/legendkit?color=blue&logo=python&logoColor=white&style=flat-square)
+
 When you want to create or adjust the legend in matplotlib, things can get dirty. 
 LegendKit may solve your headache.
 

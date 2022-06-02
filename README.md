@@ -1,5 +1,5 @@
 <p align="center">
-<img src="images/legendkit-project.svg">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/legendkit-project.svg">
 </p>
 
 ![pypi version](https://img.shields.io/pypi/v/legendkit?color=blue&logo=python&logoColor=white&style=flat-square)
@@ -7,7 +7,7 @@
 When you want to create or adjust the legend in matplotlib, things can get dirty. 
 LegendKit may solve your headache.
 
-<img src="images/showcase.svg">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/showcase.svg">
 
 ## Features
 
@@ -47,14 +47,14 @@ from legendkit import legend
 legend(title="Trigonometry Functions", title_align="left")
 ```
 
-<img src="images/example1.svg">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example1.svg">
 
 You can even create legend like this
 ```python
 legend(title="Trigonometry Functions", title_pos="left", ncol=2)
 ```
 
-<img src="images/example1-2.svg" width="300">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example1-2.svg" width="300">
 
 
 ### Create a custom legend
@@ -77,7 +77,7 @@ legend(legend_items=[
 
 ```
 
-<img src="images/example2.svg">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example2.svg">
 
 Or you can use matplotlib legend handlers for richer definition.
 
@@ -95,7 +95,7 @@ legend(
 
 ```
 
-<img src="images/example2-2.svg">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example2-2.svg">
 
 If you want to use highly customized element as entry, 
 please refer to [here](https://matplotlib.org/stable/tutorials/intermediate/legend_guide.html#implementing-a-custom-legend-handler)
@@ -135,7 +135,7 @@ legends = hstack([legend1, legend2, legend3], title="Moons in solar systems", sp
 ax.add_artist(legends)  # Make sure you add it to the axes, or it won't be rendered
 
 ```
-<img src="images/example3.svg">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example3.svg">
 
 
 ## Understand layout in matplotlib legend
@@ -152,7 +152,7 @@ A matplotlib legend have at least two parts, the handle and the label.
 
 The units used in the layout system is the same as font size.
 
-<img src="images/handle_label_illustration.png" width="400">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/handle_label_illustration.png" width="400">
 
 
 #### Control the handle
@@ -164,7 +164,7 @@ The units used in the layout system is the same as font size.
 
 - **handletextpad**: the distance between the handle and the label.
 
-<img src="images/layout_padding_illustration.png" width="1400">
+<img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/layout_padding_illustration.png" width="1400">
 
 #### Control between different items:
 

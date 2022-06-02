@@ -106,6 +106,8 @@ class ListLegend(Legend):
         legend_handles = []
         legend_labels = []
 
+        self._has_axes = ax is not None
+
         # If only axes is provided, we will try to get
         if (ax is not None) & (legend_items is None) & (handles is None) & (labels is None):
             legend_handles, legend_labels = ax.get_legend_handles_labels(handler_map)
@@ -128,21 +130,12 @@ class ListLegend(Legend):
                 legend_labels.append(label)
 
         if legend_items is None:
-
-            # if handles and labels:
-            #     # if got both handles and labels as kwargs, make same length (matplotlib source)
-            #     legend_handles, legend_labels = zip(*zip(handles, labels))
-            # elif handles is not None and labels is None:
-            #     legend_handles = handles
-            #     legend_labels = [handle.get_label() for handle in handles]
-            # elif labels is not None and handles is None:
-            #     # Get as many handles as there are labels.
-            #     legend_handles = [handle for handle, label
-            #                       in zip(_get_legend_handles([ax], handler_map), labels)]
-            # else:
-            #     raise TypeError("At least one of the following arguments must be specific, "
-            #                     "`ax`, `legend_items`, `handles`, labels`.")
+            # make matplotlib handles this
             legend_handles, legend_labels = handles, labels
+
+        # handle location parameters
+        # we provide extra loc parameters
+        # ['out left center', 'out ]
 
         frameless_options = dict(
             # Dimensions as fraction of font size:

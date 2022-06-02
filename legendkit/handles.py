@@ -21,5 +21,6 @@ class CircleItem(Patch, ABC):
 
 class LineItem(Line2D, ABC):
     """Create line for legend handles"""
+
     def __init__(self, *args, **kwargs):
         super().__init__([], [], *args, **kwargs)

@@ -54,7 +54,7 @@ You can even create legend like this
 legend(title="Trigonometry Functions", title_pos="left", ncol=2)
 ```
 
-<img src="images/example1-2.svg">
+<img src="images/example1-2.svg" width="300">
 
 
 ### Create a custom legend
@@ -67,7 +67,9 @@ from legendkit import legend
 legend(legend_items=[
     # (handle, label, config)
     ('square', 'Item 1', {'color': '#01949A'}),
-    ('circle', 'Item 2', {'facecolor': '#004369', 'edgecolor': '#DB1F48', 'linewidth': 0.5}),
+    ('circle', 'Item 2', {'facecolor': '#004369', 
+                          'edgecolor': '#DB1F48', 
+                          'linewidth': 0.5}),
     ('rect', 'Item 3', {'color': '#E5DDC8'}),
     # Or you can have no config at all
     ('line', 'Item 4'),
@@ -134,3 +136,44 @@ ax.add_artist(legends)  # Make sure you add it to the axes, or it won't be rende
 
 ```
 <img src="images/example3.svg">
+
+
+## Understand layout in matplotlib legend
+
+If you are familiar with css flexbox model, this is similar to how legend is layout internally in 
+matplotlib. 
+
+A matplotlib legend have at least two parts, the handle and the label.
+
+- handle: The graphic to represent the item in the plot.
+- label: The text for the item.
+
+### Parameters to control the layout
+
+The units used in the layout system is the same as font size.
+
+<img src="images/handle_label_illustration.png" width="400">
+
+
+#### Control the handle
+
+- **handleheight**: The height of the handle.
+- **handlelength**: The length of the handle.
+
+#### Control the handle and the label:
+
+- **handletextpad**: the distance between the handle and the label.
+
+<img src="images/layout_padding_illustration.png" width="1400">
+
+#### Control between different items:
+
+- **labelspacing**: This control the distance between different legend items, 
+   it also controls the distance between title and items.
+- **columnspacing**: The distance between multiple columns of items.
+
+#### Control the legend outer frame:
+
+- **frameon**: Toggle the on/off of the outer frame.
+- **borderpad**: The distance between the actual legend and the outer frame, apply for both x and y direction.
+- **borderaxespad**: The distance between the axes and the legend.

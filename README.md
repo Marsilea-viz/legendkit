@@ -23,6 +23,9 @@ pip install legendkit
 
 ## Usage
 
+Any parameters you can use in legend or colorbar in matplotlib can 
+also be used here.
+
 ### Use it as the same old day
 
 First create a plot
@@ -56,6 +59,26 @@ legend(title="Trigonometry Functions", title_pos="left", ncol=2)
 
 <img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example1-2.svg" width="300">
 
+
+### Create Colorbar
+
+```python
+from legendkit import Colorbar, EllipseColorbar
+
+Colorbar(vmin=0, vmax=10, title="Colorbar", title_align="left")
+EllipseColorbar(vmin=0, vmax=10, title="Ellipse Colorbar", title_align="left")
+```
+
+### Using preset legend
+
+```python
+import matplotlib.pyplot as plt
+from legendkit import CatLegend, SizeLegend
+
+_, ax = plt.subplots()
+CatLegend(["r", "g", "b"], ["Item 1", "Item 2", "Item 3"])
+SizeLegend([i for i in range(101)])
+```
 
 ### Create a custom legend
 

@@ -24,8 +24,8 @@ class Colorbar(MPLColorbar):
             cmap: Union[str, Colormap, None] = None,
             ax: Optional[Axes] = None,
             style: str = "white",  # normal, white
-            width: float | str = None,
-            height: float | str = None,
+            width: float = None,
+            height: float = None,
             loc: Any = None,
             bbox_to_anchor: Any = None,
             bbox_transform: Any = None,
@@ -70,25 +70,25 @@ class Colorbar(MPLColorbar):
         if mappable is None:
             mappable = ScalarMappable(norm=Normalize(vmin=vmin, vmax=vmax, clip=clip), cmap=cmap)
 
-        if loc is None:
-            loc = "center left"
-        if bbox_to_anchor is None:
-            bbox_to_anchor = (1.05, 0.5, 0, 0)
-        if bbox_transform is None:
-            bbox_transform = ax.transAxes
+        # if loc is None:
+        #     loc = "center left"
+        # if bbox_to_anchor is None:
+        #     bbox_to_anchor = (1.05, 0.5, 0, 0)
+        # if bbox_transform is None:
+        #     bbox_transform = ax.transAxes
 
         if (width is None) & (height is None):
-            width, height = (0.5, 1.5)
+            width, height = (0.3, 1.5)
             # Flip width and height
             if orientation == 'horizontal':
                 width, height = height, width
-        elif width & height:
+        elif (width is not None) & (height is not None):
             pass
         else:
             if width is None:
-                width = 1
+                width = 1.5 if orientation == "horizontal" else 0.3
             else:
-                height = 1
+                height = 0.3 if orientation == "horizontal" else 1.5
 
         axins = inset_axes(ax, width=width, height=height, borderpad=borderpad,
                            bbox_to_anchor=bbox_to_anchor, bbox_transform=bbox_transform, loc=loc,
@@ -99,11 +99,7 @@ class Colorbar(MPLColorbar):
 
         if style == "white":
             # Inward ticks and white color
-            if self.orientation == "vertical":
-                change_axis = self.ax.yaxis
-            else:
-                change_axis = self.ax.xaxis
-            change_axis.set_tick_params(direction="in", color="white", width=1.5, size=5)
+            self._long_axis().set_tick_params(direction="in", color="white", width=1, size=5)
             # turn off outlines
             self.outline.set_visible(0)
 
@@ -164,12 +160,13 @@ class EllipseColorbar:
         if ax is None:
             ax = plt.gca()
 
-        if loc is None:
-            loc = "center left"
-        if bbox_to_anchor is None:
-            bbox_to_anchor = (1.05, 0.5, 0, 0)
-        if bbox_transform is None:
-            bbox_transform = ax.transAxes
+        # We don't need to do this for user
+        # if loc is None:
+        #     loc = "center left"
+        # if bbox_to_anchor is None:
+        #     bbox_to_anchor = (1.05, 0.5, 0, 0)
+        # if bbox_transform is None:
+        #     bbox_transform = ax.transAxes
 
         if (width is None) & (height is None):
             width, height = (0.5, 0.75)

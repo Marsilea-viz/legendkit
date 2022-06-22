@@ -37,7 +37,7 @@ def stack(legends,
           loc="lower left",
           frameon=False,
           bbox_to_anchor=None,
-          bbox_to_transform=None,
+          bbox_transform=None,
           title: str = None,
           title_pos: str = "top",
           title_align: str = "center",
@@ -69,7 +69,7 @@ def stack(legends,
                              prop=None,
                              frameon=frameon,
                              bbox_to_anchor=bbox_to_anchor,
-                             bbox_transform=bbox_to_transform, )
+                             bbox_transform=bbox_transform, )
 
 
 # Create two helper function

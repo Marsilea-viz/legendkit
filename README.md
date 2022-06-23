@@ -106,6 +106,10 @@ Or you can use matplotlib legend handlers for richer definition.
 
 LegendKit provides you with some predefined handlers to use out of the box.
 
+- The `SquareItem` will ensure square shape not matter how handle sizes are changed
+- The `RectItem` will ensure the rectangle shape even when handle sizes are the same
+- The `LineItem` is just a proxy to `Line2D`
+
 ```python
 from legendkit import legend
 from legendkit.handles import SquareItem, CircleItem, RectItem, LineItem
@@ -124,7 +128,7 @@ If you want to use highly customized element as entry,
 please refer to [here](https://matplotlib.org/stable/tutorials/intermediate/legend_guide.html#implementing-a-custom-legend-handler)
 
 
-### Composing multiple legends
+### Multiple legends layout
 
 Sometimes you may want to group few legends together
 
@@ -160,6 +164,19 @@ ax.add_artist(legends)  # Make sure you add it to the axes, or it won't be rende
 ```
 <img src="https://raw.githubusercontent.com/Mr-Milk/legendkit/main/images/example3.svg">
 
+
+### Grid layout with nested stack
+
+You can create nested stack by stacking other stacks.
+
+```python
+from legendkit.layout import vstack, hstack
+
+s1 = vstack([])
+s2 = vstack([])
+
+final = hstack([s1, s2])
+```
 
 ## Understand layout in matplotlib legend
 

@@ -37,7 +37,8 @@ class CatLegend(ListLegend):
 class SizeLegend(ListLegend):
     """A special class use to create legend that represent size"""
 
-    def __init__(self, sizes, array=None, colors=None, labels=None, num=5, trim_min=True, dtype=None, ascending=True, **kwargs):
+    def __init__(self, sizes, array=None, colors=None, labels=None, num=5, trim_min=True, dtype=None, ascending=True,
+                 **kwargs):
 
         self._trim_min = trim_min
         self.num = num

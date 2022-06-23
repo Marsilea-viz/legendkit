@@ -1,5 +1,6 @@
 import numpy as np
 from matplotlib.collections import CircleCollection
+from matplotlib.colors import is_color_like
 
 from legendkit import ListLegend
 
@@ -25,8 +26,9 @@ class CatLegend(ListLegend):
             handlelength=1.0,
             handletextpad=0.5,
             labelspacing=0.3,
-            **kwargs,
+            borderpad=0,
         )
+        options = {**options, **kwargs}
 
         super().__init__(legend_items=legend_items,
                          **options)
@@ -35,22 +37,35 @@ class CatLegend(ListLegend):
 class SizeLegend(ListLegend):
     """A special class use to create legend that represent size"""
 
-    def __init__(self, sizes, colors=None, labels=None, num=5, trim_min=True, forceint=True, ascending=True, **kwargs):
+    def __init__(self, sizes, array=None, colors=None, labels=None, num=5, trim_min=True, dtype=None, ascending=True, **kwargs):
 
-        smin, smax = np.nanmin(sizes), np.nanmax(sizes)
-        dtype = int if forceint else float
-        handles_sizes = np.linspace(smin, smax, num=num, dtype=dtype)
-        if trim_min:
-            handles_sizes = handles_sizes[1::]
+        self._trim_min = trim_min
+        self.num = num
+
+        if not isinstance(sizes, np.ndarray):
+            sizes = np.array(sizes)
+        # smin, smax = np.nanmin(sizes), np.nanmax(sizes)
+        # if dtype is None:
+        #     dtype = sizes.dtype
+        # handles_sizes = np.linspace(smin, smax, num=num, dtype=dtype)
+        # if trim_min:
+        #     handles_sizes = handles_sizes[1::]
+        handles_sizes = self._get_linspace(sizes)
         if colors is None:
-            colors = ['black' for _ in range(num)]
-        if labels is None:
-            labels = [None for _ in range(num)]
+            self.colors = ['black' for _ in range(num)]
+        elif is_color_like(colors):
+            self.colors = [colors for _ in range(num)]
+        else:
+            self.colors = colors
+        if (array is None) & (labels is None):
+            labels = handles_sizes
+        elif array is not None:
+            labels = self._get_linspace(array, dtype=dtype)
 
         size_handles = []
         size_labels = []
 
-        for s, label, color in zip(handles_sizes, labels, colors):
+        for s, label, color in zip(handles_sizes, labels, self.colors):
             size_handles.append(
                 CircleCollection([s], facecolors=color)
             )
@@ -66,12 +81,23 @@ class SizeLegend(ListLegend):
             frameon=False,
             handleheight=1.0,
             handlelength=1.0,
-            handletextpad=0.5,
-            labelspacing=0.5,
-            **kwargs
+            handletextpad=0.7,
+            labelspacing=1,
+            borderpad=0,
         )
+
+        options = {**options, **kwargs}
 
         super().__init__(
             handles=size_handles,
             labels=size_labels,
             **options)
+
+    def _get_linspace(self, sizes, dtype=None):
+        if dtype is None:
+            dtype = sizes.dtype
+        smin, smax = np.nanmin(sizes), np.nanmax(sizes)
+        handles_sizes = np.linspace(smin, smax, num=self.num, dtype=dtype)
+        if self._trim_min:
+            handles_sizes = handles_sizes[1::]
+        return handles_sizes

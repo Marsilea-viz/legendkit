@@ -16,7 +16,10 @@ def _create_children(artists: List[Artist]):
                 children.append(c2)
             else:
                 children.append(c1)
+        elif isinstance(art, AnchoredOffsetbox):
+            children += art.get_children()
         elif isinstance(art, Artist):
+            print("Is artist", art)
             children.append(art)
         else:
             raise TypeError(f"Cannot parse object {str(art)} with type {type(art)}")

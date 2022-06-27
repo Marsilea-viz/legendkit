@@ -12,7 +12,7 @@ class CatLegend(ListLegend):
         "large": 1.1,
     }
 
-    def __init__(self, colors, labels, size="small", handle=None, **kwargs):
+    def __init__(self, colors, labels, size="medium", handle=None, **kwargs):
         if handle is None:
             handle = 'square'
 
@@ -22,8 +22,8 @@ class CatLegend(ListLegend):
 
         options = dict(
             frameon=False,
-            handleheight=1.0,
-            handlelength=1.0,
+            handleheight=side,
+            handlelength=side,
             handletextpad=0.5,
             labelspacing=0.3,
             borderpad=0,
@@ -37,7 +37,8 @@ class CatLegend(ListLegend):
 class SizeLegend(ListLegend):
     """A special class use to create legend that represent size"""
 
-    def __init__(self, sizes, array=None, colors=None, labels=None, num=5, trim_min=True, dtype=None, ascending=True,
+    def __init__(self, sizes, array=None, colors=None, labels=None,
+                 num=5, trim_min=True, dtype=None, ascending=True,
                  **kwargs):
 
         self._trim_min = trim_min

@@ -2,6 +2,7 @@ from abc import ABC
 
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from matplotlib.collections import Collection
 
 
 class SquareItem(Patch, ABC):
@@ -24,3 +25,7 @@ class LineItem(Line2D, ABC):
 
     def __init__(self, *args, **kwargs):
         super().__init__([], [], *args, **kwargs)
+
+
+class BoxplotItem(Collection, ABC):
+    pass

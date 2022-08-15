@@ -1,5 +1,5 @@
-from ._handlers import SquareHandler, RectHandler, CircleHandler
-from .handles import SquareItem, RectItem, CircleItem
+from ._handlers import SquareHandler, RectHandler, CircleHandler, BoxplotHanlder
+from .handles import SquareItem, RectItem, CircleItem, BoxplotItem
 
 
 def register():
@@ -40,4 +40,5 @@ def register():
                                     SquareItem: SquareHandler(),
                                     RectItem: RectHandler(),
                                     CircleItem: CircleHandler(),
+                                    BoxplotItem: BoxplotHanlder(),
                                     })

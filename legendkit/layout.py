@@ -6,6 +6,8 @@ from matplotlib.legend import Legend
 from matplotlib.offsetbox import VPacker, HPacker, AnchoredOffsetbox, TextArea
 from matplotlib.patches import FancyBboxPatch
 
+from legendkit import ColorArt
+
 
 def _create_children(artists: List[Artist]):
     children = []
@@ -18,8 +20,9 @@ def _create_children(artists: List[Artist]):
                 children.append(c1)
         elif isinstance(art, AnchoredOffsetbox):
             children += art.get_children()
+        elif isinstance(art, ColorArt):
+            children += art.get_children().get_children()
         elif isinstance(art, Artist):
-            print("Is artist", art)
             children.append(art)
         else:
             raise TypeError(f"Cannot parse object {str(art)} with type {type(art)}")

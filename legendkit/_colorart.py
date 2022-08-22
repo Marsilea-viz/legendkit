@@ -10,8 +10,10 @@ from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.colors import Colormap, Normalize
 from matplotlib.font_manager import FontProperties
 from matplotlib.image import BboxImage
-from matplotlib.offsetbox import DrawingArea
+from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, AnchoredOffsetbox
 from matplotlib.patches import Rectangle
+from matplotlib.text import Text
+from matplotlib.ticker import FixedLocator
 
 
 class ColorArt(Artist):
@@ -37,6 +39,11 @@ class ColorArt(Artist):
                  fontsize=None,
                  title=None,  # legend title
                  title_fontsize=None,  # legend title font size
+                 title_fontproperties=None,  # legend title font size
+
+                 loc=None,
+                 bbox_to_anchor=None,
+                 bbox_transform=None,
 
                  ):
         super().__init__()
@@ -49,9 +56,11 @@ class ColorArt(Artist):
             ax = plt.gca()
         self.ax = ax
 
-        if self.cmap is None:
+        if cmap is None:
             cmap = mpl.rcParams['image.cmap']
         self.cmap = cmap
+        self.vmin = vmin
+        self.vmax = vmax
 
         if fontsize is None:
             fontsize = mpl.rcParams["legend.fontsize"]
@@ -68,21 +77,57 @@ class ColorArt(Artist):
         self.orientation = orientation
         self.width = width * self._fontsize
         self.height = height * self._fontsize
+        self.title = title
+        self.title_fontsize = title_fontsize
+        self.title_fontproperties = title_fontproperties
+
+        self.loc = "upper right"
+        self.bbox_to_anchor = bbox_to_anchor
+        self.bbox_transform = bbox_transform
+
+        self.textpad = mpl.rcParams['legend.handletextpad']
+
+        self._init_colorart()
 
     def _init_colorart(self):
         self.cbar_canvas = DrawingArea(self.width, self.height)
         self._create_gradient()
         self._create_axis()
+        self.text_canvas = self._labels()
+        pack1 = HPacker(pad=0, sep=0, children=[self.cbar_canvas, self.text_canvas])
+        title_canvas = TextArea(self.title, textprops={"fontweight": 600})
+        title_pack = VPacker(pad=0, sep=self._fontsize/2, children=[title_canvas, pack1])
+        self._cbar_box = AnchoredOffsetbox(
+            self.loc, child=title_pack,
+            bbox_transform=self.bbox_transform,
+            bbox_to_anchor=self.bbox_to_anchor,
+            frameon=False)
+        self.ax.add_artist(self._cbar_box)
 
     def _create_axis(self):
-        lines1 = LineCollection([[(0, i), (cbar_w * ticklen, i)] for i in np.linspace(0, cbar_h, len(ticks))],
-                                color="w", zorder=100,
-                                visible=True, linewidth=linewidth)
 
-        lines2 = LineCollection(
-            [[(cbar_w, i), (cbar_w - cbar_w * ticklen, i)] for i in np.linspace(0, cbar_h, len(ticks))],
+        locator = FixedLocator(np.linspace(self.vmin, self.vmax, 6))
+        self.ticks = locator.tick_values(self.vmin, self.vmax)
+
+        # TODO: Handle ticklocations and orientation
+        if self.orientation == "vertical":
+            ticks1_coords = [[(0, i), (self.width * self.tick_size, i)] \
+                             for i in np.linspace(0, self.height, len(self.ticks))]
+            ticks2_coords = [[(self.width, i), (self.width - self.width * self.tick_size, i)] \
+                             for i in np.linspace(0, self.height, len(self.ticks))]
+
+        ticks1 = LineCollection(
+            ticks1_coords,
             color="w", zorder=100,
-            visible=True, linewidth=linewidth)
+            visible=True, linewidth=self.tick_width)
+
+        ticks2 = LineCollection(
+            ticks2_coords,
+            color="w", zorder=100,
+            visible=True, linewidth=self.tick_width)
+
+        self.cbar_canvas.add_artist(ticks1)
+        self.cbar_canvas.add_artist(ticks2)
 
     def _create_gradient(self):
         cmap_caller = get_cmap(self.cmap)
@@ -103,3 +148,17 @@ class ColorArt(Artist):
         # Enable clip on ellipse
         # patches.set_clip_path(Ellipse((w/2, h/2), w, h, transform=da.get_transform()))
         self.cbar_canvas.add_artist(patches)
+
+    def _labels(self):
+        texts = []
+        text_canvas = DrawingArea(0, 0)
+        for ix, i in enumerate(np.linspace(0, self.height, len(self.ticks))):
+            t = Text(self.textpad * self._fontsize, i, text=self.ticks[ix], va="center", ha="left")
+            text_canvas.add_artist(t)
+        return text_canvas
+
+    def get_children(self):
+        return self._cbar_box
+
+    def remove(self):
+        self._cbar_box.remove()

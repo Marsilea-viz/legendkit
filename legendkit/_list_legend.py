@@ -10,13 +10,14 @@ from matplotlib.lines import Line2D
 from matplotlib.offsetbox import VPacker, HPacker
 from matplotlib.patches import Patch
 
-from .handles import SquareItem, RectItem, CircleItem, LineItem
+from .handles import SquareItem, RectItem, CircleItem, LineItem, BoxplotItem
 
 _handlers = {
     'square': SquareItem,
     'rect': RectItem,
     'circle': CircleItem,
-    'line': LineItem
+    'line': LineItem,
+    'boxplot': BoxplotItem,
 }
 
 

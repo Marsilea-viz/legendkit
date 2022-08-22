@@ -28,4 +28,10 @@ class LineItem(Line2D, ABC):
 
 
 class BoxplotItem(Collection, ABC):
-    pass
+
+    def __init__(self, *args, **kwargs):
+        user_ec = kwargs.get('ec')
+        user_edgecolor = kwargs.get('edgecolor')
+        if (user_ec is None) & (user_edgecolor is None):
+            kwargs['ec'] = "black"
+        super().__init__(*args, **kwargs)

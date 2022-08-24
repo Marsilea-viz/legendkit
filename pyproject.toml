@@ -1,3 +1,16 @@
+[tool.poetry]
+name = "legendkit"
+version = "0.2.0"
+description = "Legend creating and manipulation with ease for matplotlib"
+authors = ["Mr-Milk <yb97643@um.edu.mo>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = ["3.7", "3.8", "3.9", "3.10"]
+matplotlib = "^3.5"
+
+[tool.poetry.dev-dependencies]
+
 [build-system]
-requires = ["setuptools ~= 58.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

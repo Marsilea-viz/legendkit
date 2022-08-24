@@ -1,6 +1,7 @@
 from functools import partial
 from typing import List, Union, Dict, Tuple, Optional
 
+from matplotlib import _api
 import matplotlib.pyplot as plt
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
@@ -73,9 +74,8 @@ class ListLegend(Legend):
                  legend_items: Union[List[Tuple], None] = None,
                  handles: Union[str, Artist, List[str], List[Artist], None] = None,
                  labels: Union[List[str], None] = None,
-                 style: str = 'none',  # 'none', 'frameless'
-                 title_pos: str = "top",  # "top" or "left",
-                 title_align: str = "center",
+                 title_loc: str = "top",  # "top" or "left",
+                 alignment: str = "center",
                  titlepad: float = 0.5,
                  draw: bool = True,
                  handler_map: Optional[Dict] = None,
@@ -90,8 +90,8 @@ class ListLegend(Legend):
         handles
         labels
         style
-        title_pos
-        title_align
+        title_loc
+        alignment
         titlepad
         draw
         handler_map
@@ -99,10 +99,12 @@ class ListLegend(Legend):
 
         """
 
-        self._title_pos = title_pos
-        self._title_align = title_align
+        self._title_loc = title_loc
+        self._alignment = alignment
         self.titlepad = titlepad
         self._is_patch = False
+
+        _api.check_in_list(["top", "bottom", "left", "right"], title_loc=title_loc)
 
         legend_handles = []
         legend_labels = []
@@ -134,29 +136,10 @@ class ListLegend(Legend):
             # make matplotlib handles this
             legend_handles, legend_labels = handles, labels
 
-        # handle location parameters
-        # we provide extra loc parameters
-        # ['out left center', 'out ]
-
-        frameless_options = dict(
-            # Dimensions as fraction of font size:
-            frameon=False,
-            borderpad=0,  # 0.4,  # border whitespace
-            labelspacing=0.5,  # the vertical space between the legend entries
-            handlelength=1.5,  # 2.0,  # the length of the legend lines
-            handleheight=1.,  # 0.7,  # the height of the legend handle
-            handletextpad=0.4,  # 0.8,  # the space between the legend line and legend text
-            borderaxespad=0.,  # 0.5,  # the border between the axes and legend edge
-            columnspacing=1.0,  # 2.0,  # column separation
-        )
-
         default_kwargs = dict(
             title_fontproperties={'weight': 600},  # Make the title bold if user supply no style
             handler_map=handler_map,
         )
-
-        if style == 'frameless':
-            default_kwargs = {**default_kwargs, **frameless_options}
 
         final_options = {**default_kwargs, **kwargs}
         super().__init__(ax, handles=legend_handles, labels=legend_labels, **final_options)
@@ -167,49 +150,27 @@ class ListLegend(Legend):
 
     def _title_layout(self):
         fontsize = self._fontsize
-        title_align = self._title_align
-        title_pos = self._title_pos
+        alignment = self._alignment
+        title_loc = self._title_loc
 
         pad = self.borderpad * fontsize
         sep = self.titlepad * fontsize
         # To make positioning of legend title possible by override the default legend box layout
-        hpacker = partial(HPacker, pad=pad, sep=sep, align=title_align)
-        vpacker = partial(VPacker, pad=pad, sep=sep, align=title_align)
+        hpacker = partial(HPacker, pad=pad, sep=sep, align=alignment)
+        vpacker = partial(VPacker, pad=pad, sep=sep, align=alignment)
         children = [self._legend_title_box, self._legend_handle_box]
 
-        if title_pos == "top":
+        if title_loc == "top":
             self._legend_box = vpacker(children=children)
-        elif title_pos == "bottom":
+        elif title_loc == "bottom":
             self._legend_box = vpacker(children=children[::-1])
-        elif title_pos == "left":
+        elif title_loc == "left":
             self._legend_box = hpacker(children=children)
-        elif title_pos == "right":
+        elif title_loc == "right":
             self._legend_box = hpacker(children=children[::-1])
-        else:
-            raise NotImplementedError("Available options are: (top, bottom, right, left)")
+
         self._legend_box.set_figure(self.figure)
         self._legend_box.axes = self.axes
 
         # call this to maintain consistent behavior as legend
         self._legend_box.set_offset(self._findoffset)
-
-    def set_title(self, title, align=None, prop=None):
-        """
-        Set the legend title. Fontproperties can be optionally set
-        with *prop* parameter.
-        """
-        self._legend_title_box._text.set_text(title)
-        if title:
-            self._legend_title_box._text.set_visible(True)
-            self._legend_title_box.set_visible(True)
-        else:
-            self._legend_title_box._text.set_visible(False)
-            self._legend_title_box.set_visible(False)
-
-        if align is not None:
-            self._legend_box.align = align
-
-        if prop is not None:
-            self._legend_title_box._text.set_fontproperties(prop)
-
-        self.stale = True

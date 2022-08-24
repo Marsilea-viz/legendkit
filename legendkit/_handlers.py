@@ -11,6 +11,7 @@ def min_side(w, h):
 class SquareHandler(HandlerPatch):
     def _create_patch(self, legend, orig_handle,
                       xdescent, ydescent, width, height, fontsize):
+        print("square", width, height)
         if width > height:
             s = height
             xoffset = (width - height) / 2.0
@@ -21,18 +22,27 @@ class SquareHandler(HandlerPatch):
             yoffset = (height - width) / 2.0
         p = Rectangle(xy=(-xdescent + xoffset, -ydescent + yoffset),
                       width=s, height=s)
+        print("square", s)
         return p
 
 
 class RectHandler(HandlerPatch):
     def _create_patch(self, legend, orig_handle,
                       xdescent, ydescent, width, height, fontsize):
-        if width / height < 1.2:
-            height = height * 0.6
-            ydescent = ydescent - height * 0.2
-        p = Rectangle(xy=(-xdescent, -ydescent),
-                      width=width, height=height)
-        return p
+        # offset = abs(height - width) / 2.0
+        # if width < height:
+        #     height = width
+        #     ydescent -= offset
+        # else:
+        #     width = height
+        #     xdescent -= offset
+        # ensure the height / width is always > 0.5
+        if height > width * 0.5:
+            orig_height = height
+            height = width * 0.5
+            ydescent -= (orig_height - height) / 2
+        return Rectangle(xy=(-xdescent, -ydescent),
+                         width=width, height=height)
 
 
 class CircleHandler(HandlerPatch):
@@ -46,12 +56,11 @@ class CircleHandler(HandlerPatch):
             s = width
             xoffset = 0
             yoffset = (height - width) / 2.0
-        p = Circle(xy=(-xdescent + s / 2 + xoffset, -ydescent + s / 2 + yoffset), radius=s / 2)
-        return p
+        return Circle(xy=(-xdescent + s / 2 + xoffset, -ydescent + s / 2 + yoffset),
+                      radius=s / 2)
 
 
 class BoxplotHanlder(HandlerPatch):
-
     box_w = 0.9
     box_h = 0.6
 
@@ -75,4 +84,3 @@ class BoxplotHanlder(HandlerPatch):
                           height=linewidth / 2)
 
         return PatchCollection([vline, box, hline], match_original=True)
-

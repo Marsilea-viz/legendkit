@@ -6,7 +6,7 @@ from matplotlib.legend import Legend
 from matplotlib.offsetbox import VPacker, HPacker, AnchoredOffsetbox, TextArea
 from matplotlib.patches import FancyBboxPatch
 
-from legendkit import ColorArt
+from ._colorart import ColorArt
 
 
 def _create_children(artists: List[Artist]):
@@ -46,8 +46,8 @@ def stack(legends,
           bbox_transform=None,
           title: str = None,
           title_pos: str = "top",
-          title_align: str = "center",
-          title_fontproperties: Optional[Dict] = None
+          alignment: str = "center",
+          title_fontproperties: Dict = None
           ):
     children = _create_children(legends)
     # Call different layout helper depends on orientation
@@ -67,7 +67,7 @@ def stack(legends,
         title_box = TextArea(title, textprops=title_fontproperties)
         content = [title_box, vpack]
         if title_pos == "top":
-            vpack = VPacker(pad=0, sep=spacing / 2, align=title_align, mode=mode, children=content)
+            vpack = VPacker(pad=0, sep=spacing / 2, align=alignment, mode=mode, children=content)
     return AnchoredOffsetbox(child=vpack,
                              loc=loc,
                              pad=padding,

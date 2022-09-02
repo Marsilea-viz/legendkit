@@ -16,6 +16,8 @@ from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, Anchor
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
 
+from ._utils import Locs
+
 
 class ColorArt(Artist):
 
@@ -60,6 +62,7 @@ class ColorArt(Artist):
                  alignment="baseline",
 
                  loc=None,
+                 deviation=0,
                  bbox_to_anchor=None,
                  bbox_transform=None,
 
@@ -148,7 +151,7 @@ class ColorArt(Artist):
 
         if fontsize is None:
             fontsize = mpl.rcParams["legend.fontsize"]
-        # Copy from matplotlib/lib/legend.py
+        # Copy from matplotlib/lib/plot_simple_tutorial.py
         if prop is None:
             self.prop = FontProperties(size=fontsize)
         else:
@@ -163,13 +166,10 @@ class ColorArt(Artist):
         self.title_fontproperties = title_fontproperties
         self.alignment = alignment
 
-        self._loc = loc
-        self._bbox_to_anchor = bbox_to_anchor
-        self._bbox_transform = bbox_transform
-        if (loc is None) & (bbox_to_anchor is None) & (bbox_transform is None):
-            self._loc = "center left"
-            self._bbox_to_anchor = (1.05, 0.5)
-            self._bbox_transform = self.ax.transAxes
+        loc, bbox_to_anchor, bbox_transform = \
+            Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
+                             bbox_transform=bbox_transform,
+                             deviation=deviation)
 
         self.textpad = mpl.rcParams['legend.handletextpad'] if textpad is None else textpad
         self.borderpad = mpl.rcParams['legend.borderpad'] if borderpad is None else borderpad
@@ -226,7 +226,7 @@ class ColorArt(Artist):
         pack1 = packer(pad=0,
                        sep=self.textpad * self._fontsize,
                        children=children,
-                       align="top")
+                       align="bottom") # TODO: change based on direction
         if self.title is not None:
             if self.title_fontproperties is None:
                 textprops = dict(fontweight=600)
@@ -250,7 +250,7 @@ class ColorArt(Artist):
             borderpad=self.borderaxespad,
             bbox_transform=self._bbox_transform,
             bbox_to_anchor=self._bbox_to_anchor,
-            frameon=True)
+            frameon=False)
         self.ax.add_artist(self._cbar_box)
 
     def _add_color_patches(self, canvas):
@@ -388,6 +388,8 @@ class ColorArt(Artist):
             b = np.hstack((b, b[-1] + 1))
 
         # transform from 0-1 to vmin-vmax:
+        # TODO: For CenteredNorm and TwoSlopeNorm
+        #   Maybe need to ask user to scaled it first
         if not self.norm.scaled():
             self.norm.vmin = 0
             self.norm.vmax = 1
@@ -418,7 +420,7 @@ class ColorArt(Artist):
                 # put ticks on integers between the boundaries of NoNorm
                 nv = len(self._values)
                 base = 1 + int(nv / 10)
-                locator = ticker.IndexLocator(base=base, offset=.5)
+                locator = ticker.IndexLocator(base=base, offset=0)
         elif isinstance(self.norm, colors.LogNorm):
             base = self.norm._scale.base
             if locator is None:
@@ -480,7 +482,12 @@ class ColorArt(Artist):
         return locs, ticks1, ticks2, ticklabels, offset_string
 
     def _locate(self, v):
-        locs = np.array([self.norm(i) for i in v])
+        if isinstance(self.norm, (colors.NoNorm, colors.BoundaryNorm)):
+            arr = self._boundaries
+            normalize = colors.Normalize(vmin=np.min(arr), vmax=np.max(arr))
+            locs = np.array([normalize(i) for i in v])
+        else:
+            locs = np.array([self.norm(i) for i in v])
         if self.orientation == "vertical":
             locs = (1 - locs) * self.height if self.flip else locs * self.height
 

@@ -1,3 +1,22 @@
+"""
+Reusable Hanldes for Legend
+===========================
+
+Examples
+--------
+
+.. plot::
+    :context: close-figs
+
+    >>> from legendkit import legend
+    >>> from legendkit.handles import SquareItem, CircleItem, RectItem, LineItem, BoxplotItem
+    >>> _, ax = plt.subplots(figsize=(1, 1.5)); ax.set_axis_off()
+    >>> legend(ax, handles=[SquareItem(), CircleItem(),
+    ...                     RectItem(), LineItem(), BoxplotItem()],
+    ...        labels=['Square', 'Circle', 'Rect', 'Line', 'Boxplot'])
+
+
+"""
 from abc import ABC
 
 from matplotlib.lines import Line2D
@@ -6,12 +25,12 @@ from matplotlib.collections import Collection
 
 
 class SquareItem(Patch, ABC):
-    """Create square for legend handles"""
+    """Ensure render as square"""
     pass
 
 
 class RectItem(Patch, ABC):
-    """Create rectangle for legend handles"""
+    """Ensure render as rectangle"""
     pass
 
 
@@ -28,7 +47,7 @@ class LineItem(Line2D, ABC):
 
 
 class BoxplotItem(Collection, ABC):
-
+    """Create boxplot for legend handles"""
     def __init__(self, *args, **kwargs):
         user_ec = kwargs.get('ec')
         user_edgecolor = kwargs.get('edgecolor')

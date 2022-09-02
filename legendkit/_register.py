@@ -28,7 +28,7 @@ def register():
         'legend.handlelength': 2.0,  # 2.0,  # the length of the legend lines
         'legend.handleheight': 2.0,  # 0.7,  # the height of the legend handle
         'legend.handletextpad': 0.3,  # 0.8,  # the space between the legend line and legend text
-        'legend.borderaxespad': 0.,  # 0.5,  # the border between the axes and legend edge
+        'legend.borderaxespad': 0.5,  # 0.5,  # the border between the axes and legend edge
         'legend.columnspacing': 1.0  # 2.0,  # column separation
     }
 

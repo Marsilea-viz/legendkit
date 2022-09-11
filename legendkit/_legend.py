@@ -14,7 +14,7 @@ from matplotlib.lines import Line2D
 from matplotlib.offsetbox import VPacker, HPacker
 from matplotlib.patches import Patch
 
-from ._utils import Locs
+from ._locs import Locs
 from .handles import SquareItem, RectItem, CircleItem, LineItem, BoxplotItem
 
 _handlers = {

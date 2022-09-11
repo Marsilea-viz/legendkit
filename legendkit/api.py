@@ -26,5 +26,5 @@ def colorart(*args, **kwargs):
 legend.__doc__ = ListLegend.__doc__
 cat_legend.__doc__ = CatLegend.__doc__
 size_legend.__doc__ = SizeLegend.__doc__
-colorbar.__doc__ = colorbar.__doc__
-colorart.__doc__ = colorart.__doc__
+colorbar.__doc__ = Colorbar.__doc__
+colorart.__doc__ = ColorArt.__doc__

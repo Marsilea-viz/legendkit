@@ -16,10 +16,28 @@ from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, Anchor
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
 
-from ._utils import Locs
+from ._locs import Locs
 
 
 class ColorArt(Artist):
+    """Axes-independent colorbar
+
+    Parameters
+    ----------
+    ax
+    mappable
+    cmap
+    norm
+    alpha
+    values
+    boundaries
+    flip
+    orientation
+
+
+
+
+    """
 
     def __repr__(self):
         return "<ColorArt>"

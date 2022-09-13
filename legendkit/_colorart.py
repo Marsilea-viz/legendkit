@@ -34,16 +34,12 @@ class ColorArt(Artist):
     flip
     orientation
 
-
-
-
     """
 
     def __repr__(self):
         return "<ColorArt>"
 
     def __init__(self,
-                 ax: Axes = None,
                  mappable=None,
                  cmap=None,
                  norm=None,
@@ -56,6 +52,7 @@ class ColorArt(Artist):
                  flip=False,
                  # spacing='uniform',
                  orientation="vertical",
+                 ax: Axes = None,
 
                  ticks=None,
                  format=None,
@@ -80,12 +77,21 @@ class ColorArt(Artist):
                  alignment="baseline",
 
                  loc=None,
-                 deviation=0,
+                 deviation=0.05,
                  bbox_to_anchor=None,
                  bbox_transform=None,
 
+                 rasterized=True,
+
                  ):
+        if ax is None:
+            ax = plt.gca()
+        self.ax = ax
+
         super().__init__()
+        if rasterized:
+            # Force rasterization
+            self._rasterized = True
 
         if mappable is None:
             mappable = cm.ScalarMappable(norm=norm, cmap=cmap)
@@ -163,10 +169,6 @@ class ColorArt(Artist):
         self.ticklocation = ticklocation
         self.ticklabel_loc = ticklabel_loc
 
-        if ax is None:
-            ax = plt.gca()
-        self.ax = ax
-
         if fontsize is None:
             fontsize = mpl.rcParams["legend.fontsize"]
         # Copy from matplotlib/lib/plot_simple_tutorial.py
@@ -184,7 +186,7 @@ class ColorArt(Artist):
         self.title_fontproperties = title_fontproperties
         self.alignment = alignment
 
-        loc, bbox_to_anchor, bbox_transform = \
+        self._loc, self._bbox_to_anchor, self._bbox_transform = \
             Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
                              bbox_transform=bbox_transform,
                              deviation=deviation)

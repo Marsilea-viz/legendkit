@@ -75,17 +75,22 @@ class ListLegend(Legend):
     ----------
     ax : Axes
         The axes to draw on
-    legend_items : list of (handle, label)
-
-    handles
-    labels
-    style
-    title_loc
-    alignment
-    titlepad
-    draw
+    legend_items : list of (handle, label, styles)
+    handles : list
+        A list of legend handler
+    labels : list
+        A list of legend labels
+    title_loc : {'top', 'bottom', 'left', 'right'}
+        The location of title
+    alignment : {'left', 'center', 'right'}
+        How to align the whole legendbox
+    titlepad : float
+        The space between title and legend entries
+    draw : bool
+        Whether to draw the legend
     handler_map
-    kwargs
+    kwargs :
+        Pass to `matplotlib.legend.Legend`
 
 
     Examples
@@ -112,7 +117,7 @@ class ListLegend(Legend):
         >>> _, ax = plt.subplots(figsize=(1, 1.5))
         >>> ax.set_axis_off()
         >>> legend(ax, legend_items=[
-        ...     # (handle, label, config)
+        ...     # (handle, label, styles)
         ...     ('square', 'Item 1', {'color': '#01949A'}),
         ...     ('circle', 'Item 2', {'facecolor': '#004369',
         ...                           'edgecolor': '#DB1F48'}),
@@ -128,17 +133,17 @@ class ListLegend(Legend):
         return "<ListLegend>"
 
     def __init__(self,
-                 ax: Axes = None,
-                 legend_items: List[Tuple] = None,
-                 handles: str | Artist | List[str] | List[Artist] = None,
-                 labels: List[str] = None,
-                 title_loc: str = "top",  # "top" or "left",
-                 alignment: str = "center",
-                 titlepad: float = 0.5,
-                 draw: bool = True,
-                 handler_map: Dict = None,
+                 ax=None,
+                 legend_items=None,
+                 handles=None,
+                 labels=None,
+                 title_loc="top",  # "top" or "left",
+                 alignment="left",
+                 titlepad=0.5,
+                 draw=True,
+                 handler_map=None,
                  loc=None,
-                 deviation=0,
+                 deviation=0.05,
                  bbox_to_anchor=None,
                  bbox_transform=None,
                  **kwargs,
@@ -155,11 +160,11 @@ class ListLegend(Legend):
         legend_labels = []
 
         self._has_axes = ax is not None
+        if ax is None:
+            ax = plt.gca()
 
         if (legend_items is None) & (handles is None) & (labels is None):
             # If only axes is provided, we will try to get
-            if ax is None:
-                ax = plt.gca()
             legend_handles, legend_labels = \
                 ax.get_legend_handles_labels(handler_map)
         elif legend_items is not None:
@@ -301,12 +306,28 @@ class CatLegend(ListLegend):
 
 
 class SizeLegend(ListLegend):
-    """A special class use to create legend that represent size"""
+    """A special class use to create legend that represent size
 
-    def __init__(self, ax=None, sizes=None, array=None, colors=None, labels=None,
-                 num=5, trim_min=True, dtype=None, ascending=True,
-                 **kwargs):
+    Parameters
+    ----------
+    ax : Axes
+        The
 
+
+    """
+
+    def __init__(self,
+                 ax=None,
+                 sizes=None,
+                 array=None,
+                 colors=None,
+                 labels=None,
+                 num=5,
+                 trim_min=True,
+                 dtype=None,
+                 ascending=True,
+                 **kwargs
+                 ):
         self._trim_min = trim_min
         self.num = num
 

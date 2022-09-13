@@ -29,7 +29,7 @@ class Colorbar(MPLColorbar):
             width: float = None,
             height: float = None,
             loc=None,
-            deviation=0,
+            deviation=0.05,
             bbox_to_anchor: Any = None,
             bbox_transform: Any = None,
             axes_class: Any = None,
@@ -122,10 +122,12 @@ class Colorbar(MPLColorbar):
         self.ax.set_facecolor('none')
         # shape clip not work for BoundaryNorm or CounterSet
         if self.solids is not None:
+            if shape is not None:
+                self._long_axis().set_tick_params(width=0)
             if shape == "ellipse":
                 xrange = self.get_xrange()
                 yrange = self.get_yrange()
-                patch = Ellipse(*self.get_midpoint(), xrange, yrange,
+                patch = Ellipse(self.get_midpoint(), xrange, yrange,
                                 facecolor='none')
                 self.ax.add_patch(patch)
                 self.solids.set_clip_path(patch)

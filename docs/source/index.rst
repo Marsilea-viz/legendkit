@@ -24,7 +24,10 @@ Installation
    :maxdepth: 2
    :caption: Sections:
 
-   gallery_examples/plot_simple_tutorial
+   tutorial/legend
+   tutorial/title&layout
+   tutorial/colorbar
+   tutorial/layout
    api.rst
 
 

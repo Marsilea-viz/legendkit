@@ -4,19 +4,12 @@ author = 'Mr-Milk'
 release = '0.2.0'
 
 extensions = [
-    'sphinx_gallery.gen_gallery',
     'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
     'sphinx.ext.autosummary',
-    'matplotlib.sphinxext.plot_directive'
+    'matplotlib.sphinxext.plot_directive',
+    'numpydoc',
 ]
 
-sphinx_gallery_conf = {
-    'examples_dirs': 'examples',  # path to your example scripts
-    'gallery_dirs': 'gallery_examples',  # path to where to save gallery generated output
-    # 'image_scrapers': (matplotlib_svg_scraper(),),
-    # 'image_srcset': ["2x"],
-}
 # setting autosummary
 autosummary_generate = True
 
@@ -25,6 +18,11 @@ plot_include_source = True
 plot_html_show_source_link = False
 plot_html_show_formats = False
 plot_formats = ['svg']
+plot_pre_code = "import numpy as np; from matplotlib import pyplot as plt;" \
+                "import matplotlib as mpl; np.random.seed(0);" \
+                "mpl.rcParams['savefig.bbox'] = 'tight';" \
+                "plt.style.use('https://github.com/dhaitz/" \
+                "matplotlib-stylesheets/raw/master/pacoty.mplstyle');"
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']

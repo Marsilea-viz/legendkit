@@ -218,7 +218,8 @@ class ListLegend(Legend):
         children = [self._legend_title_box, self._legend_handle_box]
         if title_loc in ["top", "bottom"]:
             packer = VPacker
-        if title_loc in ["bottom", "right"]:
+        else:
+            # if title_loc in ["bottom", "right"]:
             children = children[::-1]
 
         self._legend_box = packer(pad=pad, sep=sep,

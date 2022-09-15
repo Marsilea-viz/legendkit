@@ -23,6 +23,7 @@ class Colorbar(MPLColorbar):
             mappable=None,
             norm=None,
             cmap=None,
+            *,
             ax: Axes = None,
             style: str = "white",  # normal, white
             shape: str = "rect",

@@ -43,6 +43,8 @@ class ColorArt(Artist):
                  mappable=None,
                  cmap=None,
                  norm=None,
+                 *,
+                 ax: Axes = None,
                  alpha=None,
                  values=None,
                  boundaries=None,
@@ -52,7 +54,6 @@ class ColorArt(Artist):
                  flip=False,
                  # spacing='uniform',
                  orientation="vertical",
-                 ax: Axes = None,
 
                  ticks=None,
                  format=None,

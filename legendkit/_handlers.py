@@ -11,7 +11,6 @@ def min_side(w, h):
 class SquareHandler(HandlerPatch):
     def _create_patch(self, legend, orig_handle,
                       xdescent, ydescent, width, height, fontsize):
-        print("square", width, height)
         if width > height:
             s = height
             xoffset = (width - height) / 2.0
@@ -22,7 +21,6 @@ class SquareHandler(HandlerPatch):
             yoffset = (height - width) / 2.0
         p = Rectangle(xy=(-xdescent + xoffset, -ydescent + yoffset),
                       width=s, height=s)
-        print("square", s)
         return p
 
 

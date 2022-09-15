@@ -49,6 +49,7 @@ def stack(legends,
           deviation=0.05,
           title: str = None,
           title_loc: str = "top",
+          titlepad=0,
           alignment: str = "center",
           title_fontproperties: Dict = None
           ):
@@ -56,22 +57,31 @@ def stack(legends,
 
     Parameters
     ----------
-    legends
-    ax
-    orientation
-    spacing
-    padding
-    align
+    legends : list of legends or artists
+    ax : The axes to draw upon
+    orientation : {'vertical', 'horizontal'}
+    spacing : float
+        The space between legends
+    padding : float
+        The space around the legends
+    align : str
     mode
     loc
     frameon
     bbox_to_anchor
     bbox_transform
-    deviation
-    title
-    title_loc
-    alignment
-    title_fontproperties
+    deviation : float
+        The space that deviate from axes
+    title : str
+        The text of title
+    title_loc : {'top', 'bottom', 'left', 'right'}
+        The location of title
+    titlepad : float
+        The space between title and legend entries
+    alignment : {'left', 'center', 'right'}
+        The alignment of the elements inside box
+    title_fontproperties : dict
+        The font dict that configurate title
 
     Returns
     -------
@@ -93,9 +103,15 @@ def stack(legends,
         if title_fontproperties is None:
             title_fontproperties = {'weight': 600}
         title_box = TextArea(title, textprops=title_fontproperties)
+
         content = [title_box, vpack]
-        if title_loc == "top":
-            vpack = VPacker(pad=0, sep=spacing / 2, align=alignment, mode=mode, children=content)
+        packer = HPacker
+        if title_loc in ["top", "bottom"]:
+            packer = VPacker
+        else:
+            content = content[::-1]
+        pack = packer(pad=titlepad, sep=spacing / 2, align=alignment,
+                      mode=mode, children=content)
     # If user supply the ax
     # The legend box will be rendered on the axes
     # So user don't have to call ax.add_artist()
@@ -104,7 +120,7 @@ def stack(legends,
             Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
                              bbox_transform=bbox_transform,
                              deviation=deviation)
-    legend_box = AnchoredOffsetbox(child=vpack,
+    legend_box = AnchoredOffsetbox(child=pack,
                                    loc=loc,
                                    pad=padding,
                                    borderpad=0,

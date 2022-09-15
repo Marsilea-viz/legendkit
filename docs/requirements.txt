@@ -1,0 +1,5 @@
+Sphinx==5.1.1
+furo==2022.6.21
+matplotlib==3.5.2
+scipy==1.9.1
+pandas==1.4.4

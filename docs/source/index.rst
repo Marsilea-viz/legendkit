@@ -28,6 +28,7 @@ Installation
    tutorial/title&layout
    tutorial/colorbar
    tutorial/layout
+   tutorial/matplotlib_legend
    api.rst
 
 

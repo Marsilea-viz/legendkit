@@ -11,5 +11,6 @@ API Reference
     size_legend
     colorbar
     colorart
-    layout
+    vstack
+    hstack
     handles

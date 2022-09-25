@@ -307,65 +307,114 @@ class CatLegend(ListLegend):
 
 
 class SizeLegend(ListLegend):
-    """A special class use to create legend that represent size
+    """Create legend that represent the size of circle
 
     Parameters
     ----------
+    sizes : list
+        The sizes array of all circles on the plot
     ax : Axes
-        The
+        The axes to draw the legend
+    labels : list of str
+        The labels of the legend
+    array : list of number
+        The actual data used in plotting, will be used to
+        display labels if labels is not specific
+    colors : list of color
+        The color of the entry
+    show_at : list of float, default: [.25, .5, .75, 1.]
+        The percentile to show the sizes
+    dtype
+    handler_kw : mapping
+        Use this to control the style of handler
+    kwargs : mapping
+        Pass to `legendkit.ListLegend`
+
+
+    Examples
+    --------
+
+    .. plot::
+        :context: close-figs
+
+        >>> from legendkit import size_legend
+        >>> sizes = np.arange(0, 101, 10)
+        >>> _, ax = plt.subplots(figsize=(1, 1.5)); ax.set_axis_off()
+        >>> size_legend(sizes)
+
+    Change the looking of legends
+
+    .. plot::
+        :context: close-figs
+
+        >>> from legendkit import size_legend
+        >>> sizes = np.arange(0, 101, 10)
+        >>> array = np.arange(0, 201, 10)
+        >>> _, ax = plt.subplots(figsize=(1, 1.5)); ax.set_axis_off()
+        >>> size_legend(sizes, array=array, 
+        ...             show_at=[.2, .4, .6, .8, 1.],
+        ...             colors=['r', 'r', '.5', '.5', 'g'],
+        ...             handler_kw=dict(ec='orange'))
 
 
     """
 
     def __init__(self,
+                 sizes,
+                 *,
                  ax=None,
-                 sizes=None,
+                 labels=None,
                  array=None,
                  colors=None,
-                 labels=None,
-                 num=5,
-                 trim_min=True,
+                 show_at=None,
                  dtype=None,
-                 ascending=True,
+                 handler_kw=None,
                  **kwargs
                  ):
-        self._trim_min = trim_min
-        self.num = num
+        if show_at is None:
+            show_at = [.25, .5, .75, 1.]
+        if handler_kw is None:
+            handler_kw = {}
+        num = len(show_at)
 
-        if not isinstance(sizes, np.ndarray):
-            sizes = np.array(sizes)
-        # smin, smax = np.nanmin(sizes), np.nanmax(sizes)
-        # if dtype is None:
-        #     dtype = sizes.dtype
-        # handles_sizes = np.linspace(smin, smax, num=num, dtype=dtype)
-        # if trim_min:
-        #     handles_sizes = handles_sizes[1::]
-        handles_sizes = self._get_linspace(sizes)
+        sizes = np.asarray(sizes)
+        if dtype is None:
+            if array is not None:
+                dtype = array.dtype
+            else:
+                dtype = sizes.dtype
+
+        handle_sizes = np.array(
+            [np.percentile(sizes, q * 100) for q in show_at],
+            dtype=dtype)
+
         if colors is None:
-            self.colors = ['black' for _ in range(num)]
+            self._size_colors = ['black' for _ in range(num)]
         elif is_color_like(colors):
-            self.colors = [colors for _ in range(num)]
+            self._size_colors = [colors for _ in range(num)]
         else:
-            self.colors = colors
+            self._size_colors = colors
+
         if (array is None) & (labels is None):
-            labels = handles_sizes
-        elif array is not None:
-            labels = self._get_linspace(array, dtype=dtype)
+            self._size_labels = handle_sizes
+        elif labels is not None:
+            self._size_labels = labels
+        else:
+            self._size_labels = np.array([
+                np.percentile(array, q * 100) for q in show_at],
+                dtype=dtype)
 
         size_handles = []
         size_labels = []
 
-        for s, label, color in zip(handles_sizes, labels, self.colors):
-            size_handles.append(
-                CircleCollection([s], facecolors=color)
-            )
-            if label is None:
-                label = s
+        for s, label, color in zip(handle_sizes,
+                                   self._size_labels,
+                                   self._size_colors):
+            size_handles.append(CircleCollection([s],
+                                                 facecolors=color,
+                                                 **handler_kw,
+                                                 ))
             size_labels.append(label)
-
-        if not ascending:
-            size_handles = size_handles[::-1]
-            size_labels = size_labels[::-1]
 
         options = dict(
             frameon=False,
@@ -375,19 +424,10 @@ class SizeLegend(ListLegend):
             labelspacing=1,
             borderpad=0,
         )
-
         options = {**options, **kwargs}
 
         super().__init__(
+            ax=ax,
             handles=size_handles,
             labels=size_labels,
             **options)
-
-    def _get_linspace(self, sizes, dtype=None):
-        if dtype is None:
-            dtype = sizes.dtype
-        smin, smax = np.nanmin(sizes), np.nanmax(sizes)
-        handles_sizes = np.linspace(smin, smax, num=self.num, dtype=dtype)
-        if self._trim_min:
-            handles_sizes = handles_sizes[1::]
-        return handles_sizes

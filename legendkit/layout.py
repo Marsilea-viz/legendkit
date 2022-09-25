@@ -26,7 +26,8 @@ def _create_children(artists: List[Artist]):
         elif isinstance(art, Artist):
             children.append(art)
         else:
-            raise TypeError(f"Cannot parse object {str(art)} with type {type(art)}")
+            raise TypeError(
+                f"Cannot parse object {str(art)} with type {type(art)}")
         try:
             # remove artist from the canvas to avoid rendering overlay
             art.remove()
@@ -93,18 +94,18 @@ def stack(legends,
         packer = VPacker
     else:
         packer = HPacker
-    vpack = packer(pad=0,
-                   sep=spacing,
-                   align=align,
-                   mode=mode,
-                   children=children
-                   )
+    children_pack = packer(pad=0,
+                           sep=spacing,
+                           align=align,
+                           mode=mode,
+                           children=children
+                           )
     if title is not None:
         if title_fontproperties is None:
             title_fontproperties = {'weight': 600}
         title_box = TextArea(title, textprops=title_fontproperties)
 
-        content = [title_box, vpack]
+        content = [title_box, children_pack]
         packer = HPacker
         if title_loc in ["top", "bottom"]:
             packer = VPacker
@@ -112,6 +113,8 @@ def stack(legends,
             content = content[::-1]
         pack = packer(pad=titlepad, sep=spacing / 2, align=alignment,
                       mode=mode, children=content)
+    else:
+        pack = children_pack
     # If user supply the ax
     # The legend box will be rendered on the axes
     # So user don't have to call ax.add_artist()

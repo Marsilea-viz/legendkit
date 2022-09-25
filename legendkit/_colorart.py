@@ -24,15 +24,39 @@ class ColorArt(Artist):
 
     Parameters
     ----------
-    ax
     mappable
     cmap
     norm
+    ax
     alpha
     values
     boundaries
     flip
     orientation
+    ticks
+    format
+    tick_width
+    tick_size
+    tick_color
+    ticklocation
+    width
+    height
+    borderpad
+    textpad
+    borderaxespad
+    prop
+    fontsize
+    title
+    title_fontsize
+    title_fontproperties
+    alignment
+    loc
+    deviation
+    bbox_to_anchor
+    bbox_transform
+    rasterized : bool
+        Whether to rasterize the colorart,
+        reduce file size in vectorized backend.
 
     """
 

@@ -13,6 +13,34 @@ from ._locs import Locs
 class Colorbar(MPLColorbar):
     """Colorbar based on Axes
 
+    Parameters
+    ----------
+    mappable
+    norm
+    cmap
+    ax
+    style : {'white', 'normal'}, default: 'white'
+    width : float
+        The width of colorbar
+    height : float
+        The height of colorbar
+    loc : str
+        The location of colorbar
+    bbox_to_anchor
+    bbox_transform
+    axes_class
+    axes_kwargs
+    borderpad
+    orientation : {'vertical', 'horizontal'}
+        The orientation of the colorbar
+    title : str
+        The title of colorbar
+    alignment : {'left', 'right', 'center'}, default: 'center'
+        The alignment of title and colorbar
+    title_fontproperties
+    colorbar_options : mapping
+        Pass to `matplotlib.colorbar.Colorbar`
+
     """
 
     def __repr__(self):
@@ -38,34 +66,10 @@ class Colorbar(MPLColorbar):
             borderpad: Any = 0,
             orientation: str = "vertical",
             title: str = None,
-            title_align: str = "center",
+            alignment: str = "center",
             title_fontproperties: Dict = None,
             **colorbar_options,
     ):
-        """
-
-        Parameters
-        ----------
-        mappable
-        norm
-        cmap
-        ax
-        style
-        width
-        height
-        loc
-        bbox_to_anchor
-        bbox_transform
-        axes_class
-        axes_kwargs
-        borderpad
-        orientation
-        title
-        title_align
-        title_fontproperties
-        colorbar_options
-
-        """
 
         if ax is None:
             ax = plt.gca()
@@ -118,7 +122,7 @@ class Colorbar(MPLColorbar):
         if title is not None:
             if title_fontproperties is None:
                 title_fontproperties = {'weight': 600, 'size': 'medium'}
-            self.ax.set_title(title, loc=title_align,
+            self.ax.set_title(title, loc=alignment,
                               fontdict=title_fontproperties)
         self.ax.set_facecolor('none')
         # shape clip not work for BoundaryNorm or CounterSet

@@ -1,11 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Dict, Tuple
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import _api
-from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.collections import Collection, CircleCollection
 from matplotlib.colors import is_color_like

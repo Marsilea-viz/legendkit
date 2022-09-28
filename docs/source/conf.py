@@ -1,7 +1,7 @@
 project = 'legendkit'
 copyright = '2022, Mr-Milk'
 author = 'Mr-Milk'
-release = '0.2.0'
+release = '0.2.2'
 
 extensions = [
     'sphinx.ext.autodoc',

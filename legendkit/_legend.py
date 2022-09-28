@@ -146,7 +146,6 @@ class ListLegend(Legend):
                  **kwargs,
                  ):
         self._title_loc = title_loc
-        self._alignment = alignment
         self.titlepad = titlepad
         self._is_patch = False
 
@@ -198,6 +197,7 @@ class ListLegend(Legend):
                          handles=legend_handles,
                          labels=legend_labels,
                          **final_options)
+        self._alignment = alignment
         self._title_layout()
 
         if draw:
@@ -218,7 +218,6 @@ class ListLegend(Legend):
         else:
             # if title_loc in ["bottom", "right"]:
             children = children[::-1]
-
         self._legend_box = packer(pad=pad, sep=sep,
                                   align=alignment, children=children)
 

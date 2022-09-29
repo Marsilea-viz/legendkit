@@ -24,14 +24,14 @@ jobs:
       - name: Build the package
         run: poetry build
       - name: Publish dry run
-        run: poetry publish --dry-run
+        run: poetry publish --dry-run --skip-existing
         env:
           POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
       - name: Publish to pypi
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v')
-        run: poetry publish
+        run: poetry publish --skip-existing
         env:
           POETRY_HTTP_BASIC_PYPI_USERNAME: ${{ secrets.PYPI_USERNAME }}
           POETRY_HTTP_BASIC_PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}

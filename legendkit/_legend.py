@@ -201,7 +201,13 @@ class ListLegend(Legend):
         self._title_layout()
 
         if draw:
-            ax.add_artist(self)
+            # Attach as legend element
+            # 1. ax.get_legend() will work
+            # 2. legend won't be clipped
+            if ax.legend_ is None:
+                ax.legend_ = self
+            else:
+                ax.add_artist(self)
 
     def _title_layout(self):
         fontsize = self._fontsize

@@ -132,7 +132,10 @@ def stack(legends,
                                    bbox_to_anchor=bbox_to_anchor,
                                    bbox_transform=bbox_transform, )
     if ax is not None:
-        ax.add_artist(legend_box)
+        if ax.legend_ is None:
+            ax.legend_ = legend_box
+        else:
+            ax.add_artist(legend_box)
     return legend_box
 
 

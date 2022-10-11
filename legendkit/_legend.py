@@ -247,6 +247,8 @@ class CatLegend(ListLegend):
     labels : array-like
         The text for each legend item
     handle : optional, str or handle object
+    handler_kw : mapping
+        Use this to control the style of handler
     size : str or number, {"small", "medium", "large"}
         The size of legend handle
     kwargs :
@@ -281,12 +283,16 @@ class CatLegend(ListLegend):
                  labels=None,
                  size="medium",
                  handle=None,
+                 handle_kw=None,
                  **kwargs
                  ):
         if handle is None:
             handle = 'square'
+        if handle_kw is None:
+            handle_kw = {}
 
-        legend_items = [(handle, name, {'color': c}) for c, name in
+        legend_items = [(handle, name,
+                         {'color': c, **handle_kw}) for c, name in
                         zip(colors, labels)]
         if isinstance(size, str):
             size = self._sizer[size]

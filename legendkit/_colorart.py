@@ -12,7 +12,8 @@ from matplotlib.axes import Axes
 from matplotlib.cm import get_cmap
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.font_manager import FontProperties
-from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, AnchoredOffsetbox, AuxTransformBox
+from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, \
+    AnchoredOffsetbox, AuxTransformBox
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
 
@@ -140,7 +141,8 @@ class ColorArt(Artist):
             alpha = mappable.get_alpha()
 
         _api.check_in_list(['vertical', 'horizontal'], orientation=orientation)
-        _api.check_in_list(['both', 'left', 'right', 'top', 'bottom'], ticklocation=ticklocation)
+        _api.check_in_list(['both', 'left', 'right', 'top', 'bottom'],
+                           ticklocation=ticklocation)
         # _api.check_in_list(['uniform', 'proportional'], spacing=spacing)
 
         extend = None
@@ -216,9 +218,12 @@ class ColorArt(Artist):
                              bbox_transform=bbox_transform,
                              deviation=deviation)
 
-        self.textpad = mpl.rcParams['legend.handletextpad'] if textpad is None else textpad
-        self.borderpad = mpl.rcParams['legend.borderpad'] if borderpad is None else borderpad
-        self.borderaxespad = mpl.rcParams['legend.borderaxespad'] if borderaxespad is None else borderaxespad
+        self.textpad = mpl.rcParams[
+            'legend.handletextpad'] if textpad is None else textpad
+        self.borderpad = mpl.rcParams[
+            'legend.borderpad'] if borderpad is None else borderpad
+        self.borderaxespad = mpl.rcParams[
+            'legend.borderaxespad'] if borderaxespad is None else borderaxespad
 
         # the container for title, colorbar, ticks and tick labels
         self._cbar_box = None
@@ -232,21 +237,23 @@ class ColorArt(Artist):
             if width is not None:
                 self.width = width * self._fontsize
             else:
-                self.width = mpl.rcParams["legend.handlelength"] * self._fontsize
+                self.width = mpl.rcParams[
+                                 "legend.handlelength"] * self._fontsize
             if height is not None:
                 self.height = height * self._fontsize
             else:
-                self.height = 4 * self.width
+                self.height = 5 * self.width
 
         else:
             if height is not None:
                 self.height = height * self._fontsize
             else:
-                self.height = mpl.rcParams["legend.handleheight"] * self._fontsize
+                self.height = mpl.rcParams[
+                                  "legend.handleheight"] * self._fontsize
             if width is not None:
                 self.width = width * self._fontsize
             else:
-                self.width = 4 * self.height
+                self.width = 5 * self.height
 
     def _make_cbar_box(self):
         # Add cbar
@@ -259,7 +266,8 @@ class ColorArt(Artist):
 
         # Add ticklabels
         self._text_canvas = DPIAuxTransformBox(mtransforms.IdentityTransform())
-        self._add_ticklabels(self._text_canvas, locs, ticks1, ticks2, ticklabels)
+        self._add_ticklabels(self._text_canvas, locs,
+                             ticks1, ticks2, ticklabels)
 
         # Packing all canvas
         children = [self._cbar_canvas, self._text_canvas]
@@ -271,7 +279,7 @@ class ColorArt(Artist):
         pack1 = packer(pad=0,
                        sep=self.textpad * self._fontsize,
                        children=children,
-                       align="bottom") # TODO: change based on direction
+                       align="bottom")  # TODO: change based on direction
         if self.title is not None:
             if self.title_fontproperties is None:
                 textprops = dict(fontweight=600)
@@ -384,19 +392,25 @@ class ColorArt(Artist):
             x2, y2 = self.width, 0
             va, ha = "bottom", "center"
 
-        t1 = Text(x1, y1, '')
-        t2 = Text(x2, y2, '')
+        # This is some tricks to make the text have actual bbox
+        # But invisible by setting the alpha to 0
+        t1 = Text(x1, y1, '-')
+        t1.set_alpha(0)
+        t2 = Text(x2, y2, '-')
+        t2.set_alpha(0)
         canvas.add_artist(t1)
         canvas.add_artist(t2)
 
         # apply user defined label props
         options = dict(va=va, ha=ha, fontsize=self._fontsize)
-
+        print(locs, ticklabels)
         for loc, label in zip(locs, ticklabels):
             if self.orientation == "vertical":
-                t = Text(0, loc, text=label, **options, fontproperties=self.prop)
+                t = Text(0, loc, text=label, **options,
+                         fontproperties=self.prop)
             else:
-                t = Text(loc, 0, text=label, **options, fontproperties=self.prop)
+                t = Text(loc, 0, text=label, **options,
+                         fontproperties=self.prop)
             canvas.add_artist(t)
 
     def _process_values(self):
@@ -435,6 +449,12 @@ class ColorArt(Artist):
         # transform from 0-1 to vmin-vmax:
         # TODO: For CenteredNorm and TwoSlopeNorm
         #   Maybe need to ask user to scaled it first
+        if isinstance(self.norm, colors.CenteredNorm):
+            if self.norm.halfrange is None:
+                self.norm.halfrange = 1
+            self.norm.vmin = self.norm.vcenter - self.norm.halfrange
+            self.norm.vmax = self.norm.vcenter + self.norm.halfrange
+
         if not self.norm.scaled():
             self.norm.vmin = 0
             self.norm.vmax = 1
@@ -475,9 +495,20 @@ class ColorArt(Artist):
         elif isinstance(self.norm, colors.SymLogNorm):
             base = self.norm._scale.base
             if locator is None:
-                locator = ticker.SymmetricalLogLocator(linthresh=self.norm.linthresh, base=base)
+                locator = ticker.SymmetricalLogLocator(
+                    linthresh=self.norm.linthresh, base=base)
             if formatter is None:
                 formatter = ticker.LogFormatterSciNotation(base=base)
+        elif isinstance(self.norm, colors.AsinhNorm):
+            base = 10  # self.norm._scale.base
+            if locator is None:
+                locator = ticker.AsinhLocator(
+                    linear_width=self.norm.linear_width, base=base)
+            if formatter is None:
+                if base > 1:
+                    formatter = ticker.LogFormatterSciNotation(base=base)
+                else:
+                    formatter = ticker.StrMethodFormatter('{x:.3g}')
         elif self.boundaries is not None:
             b = self._boundaries[self._inside]
             if locator is None:
@@ -534,16 +565,23 @@ class ColorArt(Artist):
         else:
             locs = np.array([self.norm(i) for i in v])
         if self.orientation == "vertical":
-            locs = (1 - locs) * self.height if self.flip else locs * self.height
+            locs = (
+                               1 - locs) * self.height if self.flip else locs * self.height
 
-            ticks_left = [[(0, loc), (self.width * self.tick_size, loc)] for loc in locs]
-            ticks_right = [[(self.width, loc), (self.width * (1 - self.tick_size), loc)] for loc in locs]
+            ticks_left = [[(0, loc), (self.width * self.tick_size, loc)] for
+                          loc in locs]
+            ticks_right = [
+                [(self.width, loc), (self.width * (1 - self.tick_size), loc)]
+                for loc in locs]
             return locs, ticks_left, ticks_right
         else:
             locs = (1 - locs) * self.width if self.flip else locs * self.width
 
-            ticks_bottom = [[(loc, 0), (loc, self.height * self.tick_size)] for loc in locs]
-            ticks_top = [[(loc, self.height), (loc, self.height * (1 - self.tick_size))] for loc in locs]
+            ticks_bottom = [[(loc, 0), (loc, self.height * self.tick_size)] for
+                            loc in locs]
+            ticks_top = [
+                [(loc, self.height), (loc, self.height * (1 - self.tick_size))]
+                for loc in locs]
             return locs, ticks_bottom, ticks_top
 
     def _extend_lower(self):

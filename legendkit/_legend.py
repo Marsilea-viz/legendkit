@@ -72,10 +72,10 @@ class ListLegend(Legend):
     ----------
     ax : Axes
         The axes to draw on
-    legend_items : list of (handle, label, styles)
-    handles : list
+    legend_items : array-like of (handle, label, styles)
+    handles : array-like
         A list of legend handler
-    labels : list
+    labels : array-like
         A list of legend labels
     title_loc : {'top', 'bottom', 'left', 'right'}
         The location of title
@@ -242,9 +242,9 @@ class CatLegend(ListLegend):
 
     Parameters
     ----------
-    colors : list
+    colors : array-like
         The color for each legend item
-    labels : list of str
+    labels : array-like
         The text for each legend item
     handle : optional, str or handle object
     size : str or number, {"small", "medium", "large"}
@@ -313,18 +313,18 @@ class SizeLegend(ListLegend):
 
     Parameters
     ----------
-    sizes : list
+    sizes : array-like
         The sizes array of all circles on the plot
     ax : Axes
         The axes to draw the legend
-    labels : list of str
+    labels : array-like
         The labels of the legend
-    array : list of number
+    array : array-like
         The actual data used in plotting, will be used to
         display labels if labels is not specific
-    colors : list of color
+    colors : array-like
         The color of the entry
-    show_at : list of float, default: [.25, .5, .75, 1.]
+    show_at : array-like, default: [.25, .5, .75, 1.]
         The percentile to show the sizes
     dtype
     handler_kw : mapping

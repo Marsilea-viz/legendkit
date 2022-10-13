@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "legendkit"
-version = "0.2.4"
+version = "0.2.5"
 description = "Legend creation and manipulation with ease for matplotlib"
 authors = ["Mr-Milk <yb97643@um.edu.mo>"]
 license = "MIT"

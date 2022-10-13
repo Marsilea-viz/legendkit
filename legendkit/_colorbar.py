@@ -66,7 +66,7 @@ class Colorbar(MPLColorbar):
             borderpad: Any = 0,
             orientation: str = "vertical",
             title: str = None,
-            alignment: str = "center",
+            alignment: str = "left",
             title_fontproperties: Dict = None,
             **colorbar_options,
     ):

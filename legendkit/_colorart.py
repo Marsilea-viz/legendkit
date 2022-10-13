@@ -100,7 +100,7 @@ class ColorArt(Artist):
                  title=None,  # legend title
                  title_fontsize=None,  # legend title font size
                  title_fontproperties=None,  # legend title font size
-                 alignment="baseline",
+                 alignment="left",
 
                  loc=None,
                  deviation=0.05,

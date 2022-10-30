@@ -9,15 +9,21 @@ from matplotlib import _api, cm, contour, ticker, colors
 from matplotlib import pyplot as plt
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
-from matplotlib.cm import get_cmap
+
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.font_manager import FontProperties
 from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, \
     AnchoredOffsetbox, AuxTransformBox
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Ellipse
 from matplotlib.text import Text
 
 from ._locs import Locs
+
+
+def get_colormap(cmap):
+    if isinstance(cmap, colors.Colormap):
+        return cmap
+    return mpl.colormaps.get(cmap)
 
 
 class ColorArt(Artist):
@@ -79,6 +85,7 @@ class ColorArt(Artist):
                  flip=False,
                  # spacing='uniform',
                  orientation="vertical",
+                 shape="rect",
 
                  ticks=None,
                  format=None,
@@ -168,6 +175,7 @@ class ColorArt(Artist):
              'min': slice(1, None), 'max': slice(0, -1)},
             extend=extend)
         self.orientation = orientation
+        self.shape = shape
 
         # handle locator
         self._locator = None
@@ -256,30 +264,85 @@ class ColorArt(Artist):
                 self.width = 5 * self.height
 
     def _make_cbar_box(self):
+        locs, ticks1, ticks2, ticklabels, offset_string = self._get_ticks()
+        x_offset, y_offset = self._get_text_size(ticklabels)
+        width, height = self.width, self.height
+        textpad = self.textpad * self._fontsize
+        if self.orientation == "vertical":
+            width = self.width + x_offset + textpad
+        else:
+            height = self.height + y_offset + textpad
+
         # Add cbar
-        self._cbar_canvas = DrawingArea(self.width, self.height, clip=True)
-        self._add_color_patches(self._cbar_canvas)
+        canvas = DrawingArea(width, height, clip=True)
+        # self._add_color_patches(self._cbar_canvas)
+
+        cmap_caller = get_colormap(self.cmap)
+        colors_list = cmap_caller(np.arange(cmap_caller.N))
+        if self.flip:
+            colors_list = colors_list[::-1]
+
+        rects = []
+        x, y = 0, 0
+        if self.orientation == "vertical":
+            dy = self.height / len(colors_list)
+            for c in colors_list:
+                rects.append(Rectangle((x, y), width=self.width, height=dy,
+                                       fc=c, antialiased=False,
+                                       alpha=self.alpha))
+                y += dy
+
+        else:
+            dx = self.width / len(colors_list)
+            for c in colors_list:
+                rects.append(Rectangle((x, y), width=dx, height=self.height,
+                                       fc=c, antialiased=False,
+                                       alpha=self.alpha))
+                x += dx
+        patches = PatchCollection(rects, match_original=True)
+
+        if self.shape == "ellipse":
+            patches.set_clip_path(
+                Ellipse((self.width / 2, self.height / 2),
+                        self.width, self.height,
+                        transform=canvas.get_transform()))
+        canvas.add_artist(patches)
 
         # Add ticks
-        locs, ticks1, ticks2, ticklabels, offset_string = self._get_ticks()
-        self._add_ticks(self._cbar_canvas, ticks1, ticks2)
+        if self.shape == "rect":
+            # the tick will only be added if shape is rect
+            ticks1_lines = LineCollection(
+                ticks1,
+                color=self.tick_color, zorder=100,
+                visible=True, linewidth=self.tick_width)
 
-        # Add ticklabels
-        self._text_canvas = DPIAuxTransformBox(mtransforms.IdentityTransform())
-        self._add_ticklabels(self._text_canvas, locs,
-                             ticks1, ticks2, ticklabels)
+            ticks2_lines = LineCollection(
+                ticks2,
+                color=self.tick_color, zorder=100,
+                visible=True, linewidth=self.tick_width)
 
-        # Packing all canvas
-        children = [self._cbar_canvas, self._text_canvas]
-        if self.ticklabel_loc in ["left", "top"]:
-            children = children[::-1]
+            if self.ticklocation == "both":
+                canvas.add_artist(ticks1_lines)
+                canvas.add_artist(ticks2_lines)
+            elif self.ticklocation in ["bottom", "left"]:
+                canvas.add_artist(ticks1_lines)
+            else:
+                canvas.add_artist(ticks2_lines)
 
-        packer = HPacker if self.orientation == "vertical" else VPacker
+            label_x = self.width + textpad
+            label_y = self.height + textpad
+            va, ha = "bottom", "center"
+            if self.orientation == "vertical":
+                va, ha = "center", "left"
+            options = dict(va=va, ha=ha, fontsize=self._fontsize,
+                           fontproperties=self.prop)
+            for loc, label in zip(locs, ticklabels):
+                if self.orientation == "vertical":
+                    t = Text(label_x, loc, label, **options)
+                else:
+                    t = Text(loc, label_y, label, **options)
+                canvas.add_artist(t)
 
-        pack1 = packer(pad=0,
-                       sep=self.textpad * self._fontsize,
-                       children=children,
-                       align="bottom")  # TODO: change based on direction
         if self.title is not None:
             if self.title_fontproperties is None:
                 textprops = dict(fontweight=600)
@@ -287,16 +350,16 @@ class ColorArt(Artist):
                 textprops = dict(fontproperties=self.title_fontproperties)
             title_canvas = TextArea(self.title, textprops=textprops)
             title_pack = VPacker(pad=0,
-                                 # This will ensure the title
-                                 # won't overlap with labels
-                                 sep=self._fontsize / 2,
-                                 children=[title_canvas, pack1],
+                                 # A heuristic value to make the title
+                                 # not overlap with labels
+                                 sep=0.4 * self._fontsize,
+                                 children=[title_canvas, canvas],
                                  align=self.alignment
                                  )
             title_pack.axes = self.ax
             final_pack = title_pack
         else:
-            final_pack = pack1
+            final_pack = canvas
         self._cbar_box = AnchoredOffsetbox(
             self._loc, child=final_pack,
             pad=self.borderpad,
@@ -306,112 +369,25 @@ class ColorArt(Artist):
             frameon=False)
         self.ax.add_artist(self._cbar_box)
 
-    def _add_color_patches(self, canvas):
-        # create colorbar
-        cmap_caller = get_cmap(self.cmap)
-        colors = cmap_caller(np.arange(cmap_caller.N))
-        if self.flip:
-            colors = colors[::-1]
-        x, y = 0, 0
-        rects = []
-        if self.orientation == "vertical":
-            dy = self.height / len(colors)
-
-            for c in colors:
-                rects.append(
-                    Rectangle((x, y), width=self.width, height=dy,
-                              fc=c, antialiased=False, alpha=self.alpha)
-                )
-                y += dy
-
-            patches = PatchCollection(rects, match_original=True)
-            # TODO: clip on ellipse / triangle
-            # patches.set_clip_path(Ellipse((w/2, h/2), w, h, transform=da.get_transform()))
-
-        else:
-            dx = self.width / len(colors)
-            for c in colors:
-                rects.append(
-                    Rectangle((x, y), width=dx, height=self.height,
-                              fc=c, antialiased=False, alpha=self.alpha)
-                )
-                x += dx
-            patches = PatchCollection(rects, match_original=True)
-        canvas.add_artist(patches)
-
-    def _add_ticks(self, canvas, ticks1, ticks2):
-        # Add ticks
-        if self.ticklocation == "both":
-            ticks1_lines = LineCollection(
-                ticks1,
-                color=self.tick_color, zorder=100,
-                visible=True, linewidth=self.tick_width)
-
-            ticks2_lines = LineCollection(
-                ticks2,
-                color=self.tick_color, zorder=100,
-                visible=True, linewidth=self.tick_width)
-
-            canvas.add_artist(ticks1_lines)
-            canvas.add_artist(ticks2_lines)
-
-        elif self.ticklocation in ["bottom", "left"]:
-            ticks1_lines = LineCollection(
-                ticks1,
-                color=self.tick_color, zorder=100,
-                visible=True, linewidth=self.tick_width)
-
-            canvas.add_artist(ticks1_lines)
-        else:
-            ticks2_lines = LineCollection(
-                ticks2,
-                color=self.tick_color, zorder=100,
-                visible=True, linewidth=self.tick_width)
-            canvas.add_artist(ticks2_lines)
-
-    def _add_ticklabels(self, canvas, locs, ticks1, ticks2, ticklabels):
-        # Add ticklabels
-        if self.ticklabel_loc == "auto":
-            if self.ticklocation == "both":
-                if self.orientation == "vertical":
-                    self.ticklabel_loc = "right"
-                else:
-                    self.ticklabel_loc = "bottom"
-            else:
-                self.ticklabel_loc = self.ticklocation
-
-        if self.ticklabel_loc in ["bottom", "left"]:
-            label_locs = ticks1
-        else:
-            label_locs = ticks2
-
-        x1, y1 = 0, 0
-        x2, y2 = 0, self.height
-        va, ha = "center", "left"
-        if self.orientation != "vertical":
-            x2, y2 = self.width, 0
-            va, ha = "bottom", "center"
-
-        # This is some tricks to make the text have actual bbox
-        # But invisible by setting the alpha to 0
-        t1 = Text(x1, y1, '-')
-        t1.set_alpha(0)
-        t2 = Text(x2, y2, '-')
-        t2.set_alpha(0)
-        canvas.add_artist(t1)
-        canvas.add_artist(t2)
-
-        # apply user defined label props
-        options = dict(va=va, ha=ha, fontsize=self._fontsize)
-        print(locs, ticklabels)
-        for loc, label in zip(locs, ticklabels):
-            if self.orientation == "vertical":
-                t = Text(0, loc, text=label, **options,
-                         fontproperties=self.prop)
-            else:
-                t = Text(loc, 0, text=label, **options,
-                         fontproperties=self.prop)
-            canvas.add_artist(t)
+    def _get_text_size(self, ticklabels):
+        """Used to get the proper size for drawing area"""
+        fig = self.ax.get_figure()
+        renderer = fig.canvas.get_renderer()
+        all_texts = []
+        for t in ticklabels:
+            text_obj = Text(0, 0, t, fontsize=self._fontsize,
+                            fontproperties=self.prop)
+            self.ax.add_artist(text_obj)
+            all_texts.append(text_obj)
+        x_sizes, y_sizes = [], []
+        for t in all_texts:
+            bbox = t.get_window_extent(renderer)
+            x_sizes.append(bbox.xmax - bbox.xmin)
+            y_sizes.append(bbox.ymax - bbox.ymin)
+            t.remove()  # so it won't be drawn
+        x_offset = np.max(x_sizes) / (fig.dpi / 72)
+        y_offset = np.max(y_sizes) / (fig.dpi / 72)
+        return x_offset, y_offset
 
     def _process_values(self):
         if self.values is not None:
@@ -566,7 +542,7 @@ class ColorArt(Artist):
             locs = np.array([self.norm(i) for i in v])
         if self.orientation == "vertical":
             locs = (
-                               1 - locs) * self.height if self.flip else locs * self.height
+                           1 - locs) * self.height if self.flip else locs * self.height
 
             ticks_left = [[(0, loc), (self.width * self.tick_size, loc)] for
                           loc in locs]
@@ -608,33 +584,3 @@ class ColorArt(Artist):
         pass
 
 
-# plotnine/guides/guide_colorbar.py
-# Fix AuxTransformBox, Adds a dpi_transform
-# See https://github.com/matplotlib/matplotlib/pull/7344
-class DPIAuxTransformBox(AuxTransformBox, ABC):
-    def __init__(self, aux_transform):
-        AuxTransformBox.__init__(self, aux_transform)
-        self.dpi_transform = mtransforms.Affine2D()
-
-    def get_transform(self):
-        """
-        Return the :class:`~matplotlib.transforms.Transform` applied
-        to the children
-        """
-        return self.aux_transform + \
-               self.ref_offset_transform + \
-               self.dpi_transform + \
-               self.offset_transform
-
-    def draw(self, renderer):
-        """
-        Draw the children
-        """
-        dpi_cor = renderer.points_to_pixels(1.)
-        self.dpi_transform.clear()
-        self.dpi_transform.scale(dpi_cor, dpi_cor)
-
-        for c in self._children:
-            c.draw(renderer)
-
-        self.stale = False

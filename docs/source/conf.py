@@ -8,6 +8,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'matplotlib.sphinxext.plot_directive',
     'numpydoc',
+    'sphinx.ext.intersphinx',
 ]
 
 # setting autosummary
@@ -30,3 +31,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'furo'
 html_static_path = ['_static']
 html_favicon = "../../images/legendkit-logo.svg"
+
+intersphinx_mapping = {
+    'matplotlib': ('https://matplotlib.org/stable', None),
+}

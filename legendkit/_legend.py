@@ -2,34 +2,42 @@ from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib as mpl
 from matplotlib import _api
 from matplotlib.axes import Axes
-from matplotlib.collections import Collection, CircleCollection
+from matplotlib.collections import Collection
 from matplotlib.colors import is_color_like
+from matplotlib.font_manager import FontProperties
 from matplotlib.legend import Legend
 from matplotlib.lines import Line2D
+from matplotlib.markers import MarkerStyle
 from matplotlib.offsetbox import VPacker, HPacker
 from matplotlib.patches import Patch
 
+from ._handlers import CircleHandler, RectHandler, BoxplotHanlder
 from ._locs import Locs
 from .handles import SquareItem, RectItem, CircleItem, LineItem, BoxplotItem
 
 _handlers = {
-    'square': SquareItem,
+    # 'square': SquareItem,
     'rect': RectItem,
     'circle': CircleItem,
     'line': LineItem,
     'boxplot': BoxplotItem,
 }
 
-
-def _parse_handler(handle, config=None):
-    if config is None:
-        config = {}
-    if isinstance(handle, str):
-        return _handlers[handle].__call__(**config)
-    else:
-        return handle
+_handle_marker = {
+    "rect": "s",
+    "square": "s",
+    "circle": "o",
+    "triangle": "^",
+    "octagon": "8",
+    "pentagon": "p",
+    "star": "*",
+    "hexagon": "h",
+    "plus": "P",
+    "cross": "X",
+}
 
 
 def _get_legend_handles(axs, legend_handler_map=None):
@@ -65,6 +73,14 @@ def _get_legend_handles(axs, legend_handler_map=None):
             yield handle
 
 
+_default_alignment = {
+    "top": "left",
+    "bottom": "left",
+    "left": "center",
+    "right": "center"
+}
+
+
 class ListLegend(Legend):
     """This is a modified legend based the original matplotlib class
 
@@ -87,7 +103,7 @@ class ListLegend(Legend):
         Whether to draw the legend
     handler_map
     kwargs :
-        Pass to `matplotlib.legend.Legend`
+        Pass to :class:`matplotlib.legend.Legend`
 
 
     Examples
@@ -135,7 +151,7 @@ class ListLegend(Legend):
                  handles=None,
                  labels=None,
                  title_loc="top",  # "top" or "left",
-                 alignment="left",
+                 alignment=None,
                  titlepad=0.5,
                  draw=True,
                  handler_map=None,
@@ -143,21 +159,43 @@ class ListLegend(Legend):
                  deviation=0.05,
                  bbox_to_anchor=None,
                  bbox_transform=None,
+                 fontsize=None,
+                 prop=None,
+                 handleheight=None,
+                 handlelength=None,
                  **kwargs,
                  ):
+
+        _api.check_in_list(["top", "bottom", "left", "right"],
+                           title_loc=title_loc)
+        self._has_axes = ax is not None
+        if ax is None:
+            ax = plt.gca()
         self._title_loc = title_loc
         self.titlepad = titlepad
         self._is_patch = False
 
-        _api.check_in_list(["top", "bottom", "left", "right"],
-                           title_loc=title_loc)
+        if prop is None:
+            if fontsize is not None:
+                self.prop = FontProperties(size=fontsize)
+            else:
+                self.prop = FontProperties(
+                    size=mpl.rcParams["legend.fontsize"])
+        else:
+            self.prop = FontProperties._from_any(prop)
+            if isinstance(prop, dict) and "size" not in prop:
+                self.prop.set_size(mpl.rcParams["legend.fontsize"])
+
+        self._fontsize = self.prop.get_size_in_points()
+
+        def val_or_rc(val, rc_name):
+            return val if val is not None else mpl.rcParams[rc_name]
+        self.handlelength = val_or_rc(handlelength, 'legend.handlelength')
+        self.handleheight = val_or_rc(handleheight, 'legend.handleheight')
+        handle_size = min(self.handleheight, self.handlelength)
 
         legend_handles = []
         legend_labels = []
-
-        self._has_axes = ax is not None
-        if ax is None:
-            ax = plt.gca()
 
         if (legend_items is None) & (handles is None) & (labels is None):
             # If only axes is provided, we will try to get
@@ -171,9 +209,15 @@ class ListLegend(Legend):
                 else:
                     item = item[:3]
                     handle, label, handle_config = item
-                legend_handles.append(
-                    _parse_handler(handle, config=handle_config))
+                legend_handles.append(self._parse_handler(
+                    handle, handle_size, config=handle_config))
                 legend_labels.append(label)
+        elif (handles is not None) & (labels is None):
+            legend_handles = handles
+            legend_labels = [h.get_label() for h in handles]
+        elif (handles is None) & (labels is not None):
+            legend_labels = labels
+            legend_handles = [Patch() for _ in range(len(labels))]
         else:
             # make matplotlib handles this
             legend_handles, legend_labels = handles, labels
@@ -182,7 +226,12 @@ class ListLegend(Legend):
             Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
                              bbox_transform=bbox_transform,
                              deviation=deviation)
-
+        if handler_map is None:
+            handler_map = {}
+        handler_map.update({RectItem: RectHandler(),
+                            CircleItem: CircleHandler(),
+                            BoxplotItem: BoxplotHanlder(),
+                            })
         default_kwargs = dict(
             loc=loc,
             bbox_to_anchor=bbox_to_anchor,
@@ -190,6 +239,9 @@ class ListLegend(Legend):
             # Make the title bold if user supply no style
             title_fontproperties={'weight': 600},
             handler_map=handler_map,
+            fontsize=self._fontsize,
+            handleheight=self.handleheight,
+            handlelength=self.handlelength,
         )
 
         final_options = {**default_kwargs, **kwargs}
@@ -197,6 +249,8 @@ class ListLegend(Legend):
                          handles=legend_handles,
                          labels=legend_labels,
                          **final_options)
+        if alignment is None:
+            alignment = _default_alignment[self._title_loc]
         self._alignment = alignment
         self._title_layout()
 
@@ -208,6 +262,34 @@ class ListLegend(Legend):
                 ax.legend_ = self
             else:
                 ax.add_artist(self)
+
+    def _parse_handler(self, handle, handle_size, config=None):
+        if config is None:
+            config = {}
+        handler = _handlers.get(handle)
+        # Use predefined legend handler
+        if handler is not None:
+            return _handlers[handle].__call__(**config)
+
+        marker = _handle_marker.get(handle)
+        if marker is None:
+            # If it's not a marker
+            try:
+                MarkerStyle(handle)
+            except ValueError:
+                return handle
+            marker = handle
+        config.setdefault("markersize", self._fontsize * handle_size)
+        config.setdefault("color", "C0")
+        config.update({"ls": ""})
+        # handle parameters
+        fc = config.pop("fc", config.pop("facecolor", None))
+        ec = config.pop("ec", config.pop("edgecolor", None))
+        lw = config.pop("lw", config.pop("linewidth", None))
+        config.setdefault("mfc", fc)
+        config.setdefault("mec", ec)
+        config.setdefault("mew", lw)
+        return Line2D([0], [0], marker=marker, **config)
 
     def _title_layout(self):
         fontsize = self._fontsize
@@ -221,7 +303,8 @@ class ListLegend(Legend):
         children = [self._legend_title_box, self._legend_handle_box]
         if title_loc in ["top", "bottom"]:
             packer = VPacker
-        else:
+
+        if title_loc in ["bottom", "right"]:
             # if title_loc in ["bottom", "right"]:
             children = children[::-1]
         self._legend_box = packer(pad=pad, sep=sep,
@@ -232,6 +315,13 @@ class ListLegend(Legend):
 
         # call this to maintain consistent behavior as legend
         self._legend_box.set_offset(self._findoffset)
+
+
+_sizer = {
+    "small": 0.4,
+    "medium": 0.7,
+    "large": 1.1,
+}
 
 
 class CatLegend(ListLegend):
@@ -249,6 +339,8 @@ class CatLegend(ListLegend):
     handle : optional, str or handle object
     handler_kw : mapping
         Use this to control the style of handler
+    fill : bool, default: True
+        If False, the color will be drawn as edgecolor
     size : str or number, {"small", "medium", "large"}
         The size of legend handle
     kwargs :
@@ -271,11 +363,6 @@ class CatLegend(ListLegend):
 
 
     """
-    _sizer = {
-        "small": 0.4,
-        "medium": 0.7,
-        "large": 1.1,
-    }
 
     def __init__(self,
                  ax=None,
@@ -283,19 +370,24 @@ class CatLegend(ListLegend):
                  labels=None,
                  size="medium",
                  handle=None,
-                 handle_kw=None,
+                 handler_kw=None,
+                 fill=True,
                  **kwargs
                  ):
         if handle is None:
             handle = 'square'
-        if handle_kw is None:
-            handle_kw = {}
+        if handler_kw is None:
+            handler_kw = {}
 
-        legend_items = [(handle, name,
-                         {'color': c, **handle_kw}) for c, name in
-                        zip(colors, labels)]
+        legend_items = []
+        for c, name in zip(colors, labels):
+            if fill:
+                options = {'color': c, **handler_kw}
+            else:
+                options = {'ec': c, 'fc': 'none', **handler_kw}
+            legend_items.append((handle, name, options))
         if isinstance(size, str):
-            size = self._sizer[size]
+            size = _sizer[size]
         else:
             size = size
 
@@ -320,7 +412,8 @@ class SizeLegend(ListLegend):
     Parameters
     ----------
     sizes : array-like
-        The sizes array of all circles on the plot
+        The sizes array of all circles on the plot,
+        the unit is point**2, same as :func:`matplotlib.Axes.scatter`
     ax : Axes
         The axes to draw the legend
     labels : array-like
@@ -333,8 +426,12 @@ class SizeLegend(ListLegend):
     show_at : array-like, default: [.25, .5, .75, 1.]
         The percentile to show the sizes
     dtype
+    handle : {"circle", "rect"}
+        Currently, we support sized circle and rectangle
     handler_kw : mapping
         Use this to control the style of handler
+    fill : bool, default: True
+        If False, the color will be drawn as edgecolor
     kwargs : mapping
         Pass to `legendkit.ListLegend`
 
@@ -376,7 +473,9 @@ class SizeLegend(ListLegend):
                  colors=None,
                  show_at=None,
                  dtype=None,
+                 handle="circle",
                  handler_kw=None,
+                 fill=True,
                  **kwargs
                  ):
         if show_at is None:
@@ -415,13 +514,21 @@ class SizeLegend(ListLegend):
         size_handles = []
         size_labels = []
 
+        marker = _handle_marker.get(handle)
+        if marker is None:
+            marker = handle
+
         for s, label, color in zip(handle_sizes,
                                    self._size_labels,
                                    self._size_colors):
-            size_handles.append(CircleCollection([s],
-                                                 facecolors=color,
-                                                 **handler_kw,
-                                                 ))
+            if fill:
+                options = {'color': color, 'mew': .75, **handler_kw}
+            else:
+                options = {'mec': color, 'mfc': 'none',
+                           'mew': .75, **handler_kw}
+            ms = MarkerStyle(marker=marker)
+            size_handles.append(Line2D([0], [0], ls="", marker=ms,
+                                       markersize=np.sqrt(s), **options))
             size_labels.append(label)
 
         options = dict(

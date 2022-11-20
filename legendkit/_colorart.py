@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC
-
 import matplotlib as mpl
 import matplotlib.transforms as mtransforms
 import numpy as np
@@ -9,11 +7,10 @@ from matplotlib import _api, cm, contour, ticker, colors
 from matplotlib import pyplot as plt
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
-
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.font_manager import FontProperties
-from matplotlib.offsetbox import DrawingArea, VPacker, HPacker, TextArea, \
-    AnchoredOffsetbox, AuxTransformBox
+from matplotlib.offsetbox import DrawingArea, VPacker, TextArea, \
+    AnchoredOffsetbox
 from matplotlib.patches import Rectangle, Ellipse
 from matplotlib.text import Text
 
@@ -475,21 +472,25 @@ class ColorArt(Artist):
                     linthresh=self.norm.linthresh, base=base)
             if formatter is None:
                 formatter = ticker.LogFormatterSciNotation(base=base)
-        elif isinstance(self.norm, colors.AsinhNorm):
-            base = 10  # self.norm._scale.base
-            if locator is None:
-                locator = ticker.AsinhLocator(
-                    linear_width=self.norm.linear_width, base=base)
-            if formatter is None:
-                if base > 1:
-                    formatter = ticker.LogFormatterSciNotation(base=base)
-                else:
-                    formatter = ticker.StrMethodFormatter('{x:.3g}')
         elif self.boundaries is not None:
             b = self._boundaries[self._inside]
             if locator is None:
                 locator = ticker.FixedLocator(b, nbins=5)
-        else:  # most cases:
+        else:
+            # AsinhNorm is introduced at 3.6
+            if hasattr(colors, 'AsinhNorm'):
+                if isinstance(self.norm, colors.AsinhNorm):
+                    base = 10  # self.norm._scale.base
+                    if locator is None:
+                        locator = ticker.AsinhLocator(
+                            linear_width=self.norm.linear_width, base=base)
+                    if formatter is None:
+                        if base > 1:
+                            formatter = ticker.LogFormatterSciNotation(
+                                base=base)
+                        else:
+                            formatter = ticker.StrMethodFormatter('{x:.3g}')
+            # most cases:
             if locator is None:
                 # we haven't set the locator explicitly, so use the default
                 # for this axis:

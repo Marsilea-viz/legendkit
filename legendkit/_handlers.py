@@ -1,6 +1,5 @@
 from matplotlib.collections import PatchCollection
 from matplotlib.legend_handler import HandlerPatch
-from matplotlib.lines import Line2D
 from matplotlib.patches import Rectangle, Circle
 
 

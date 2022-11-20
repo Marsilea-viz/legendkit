@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib as mpl
 from matplotlib import _api
 from matplotlib.axes import Axes
 from matplotlib.collections import Collection
@@ -16,7 +16,7 @@ from matplotlib.patches import Patch
 
 from ._handlers import CircleHandler, RectHandler, BoxplotHanlder
 from ._locs import Locs
-from .handles import SquareItem, RectItem, CircleItem, LineItem, BoxplotItem
+from .handles import RectItem, CircleItem, LineItem, BoxplotItem
 
 _handlers = {
     # 'square': SquareItem,
@@ -31,12 +31,18 @@ _handle_marker = {
     "square": "s",
     "circle": "o",
     "triangle": "^",
+    "triangle-up": "^",
+    "triangle-down": "v",
+    "triangle-left": "<",
+    "triangle-right": ">",
+    "diamond": "d",
     "octagon": "8",
     "pentagon": "p",
     "star": "*",
     "hexagon": "h",
     "plus": "P",
     "cross": "X",
+    "asterisk": (6, 2, 0)
 }
 
 
@@ -84,26 +90,51 @@ _default_alignment = {
 class ListLegend(Legend):
     """This is a modified legend based the original matplotlib class
 
+    List of sementic legend handle to be used:
+        - rect
+        - circle
+        - square
+        - line
+        - boxplot
+        - triangle (triangle-up, triangle-down, triangle-left, triangle-right)
+        - diamond
+        - octagon
+        - pentagon
+        - hexagon
+        - star
+        - plus
+        - cross
+        - asterisk
+        - The markers in :mod:`matplotlib.markers`
+
     Parameters
     ----------
     ax : Axes
         The axes to draw on
     legend_items : array-like of (handle, label, styles)
+        See examples
     handles : array-like
         A list of legend handler
     labels : array-like
         A list of legend labels
     title_loc : {'top', 'bottom', 'left', 'right'}
         The location of title
-    alignment : {'left', 'center', 'right'}
-        How to align the whole legendbox
+    alignment : {'top', 'bottom', 'left', 'right', 'center'}
+        How to align the whole legendbox,
+        if title is placed on top or bottom, default is 'left';
+        if title is placed on left and right, default is 'center';
     titlepad : float
         The space between title and legend entries
     draw : bool
         Whether to draw the legend
-    handler_map
+    handler_map : dict
+    loc : str
+        Apart from the default location code, you can add 'out' as prefix
+        to place the legend ouside the axes.
+    deviation : float
+        The space between legend and axes if legend is placed ouside axes.
     kwargs :
-        Pass to :class:`matplotlib.legend.Legend`
+        For other paramters, please see :class:`matplotlib.legend.Legend`
 
 
     Examples
@@ -264,6 +295,8 @@ class ListLegend(Legend):
                 ax.add_artist(self)
 
     def _parse_handler(self, handle, handle_size, config=None):
+        if not isinstance(handle, str):
+            return handle
         if config is None:
             config = {}
         handler = _handlers.get(handle)
@@ -276,7 +309,7 @@ class ListLegend(Legend):
             # If it's not a marker
             try:
                 MarkerStyle(handle)
-            except ValueError:
+            except Exception:
                 return handle
             marker = handle
         config.setdefault("markersize", self._fontsize * handle_size)
@@ -290,6 +323,12 @@ class ListLegend(Legend):
         config.setdefault("mec", ec)
         config.setdefault("mew", lw)
         return Line2D([0], [0], marker=marker, **config)
+
+    def set_title_loc(self, loc):
+        self._title_loc = loc
+
+    def get_title_loc(self):
+        return self._title_loc
 
     def _title_layout(self):
         fontsize = self._fontsize
@@ -336,15 +375,16 @@ class CatLegend(ListLegend):
         The color for each legend item
     labels : array-like
         The text for each legend item
-    handle : optional, str or handle object
+    handle : str or handle object, default: 'rect'
+        The handle to be used for every entry
     handler_kw : mapping
         Use this to control the style of handler
     fill : bool, default: True
-        If False, the color will be drawn as edgecolor
+        If not filled, the color will draw on the edge.
     size : str or number, {"small", "medium", "large"}
         The size of legend handle
     kwargs :
-        pass to `ListLegend`
+        Pass to :func:`legendkit.legend`
 
     Examples
     --------
@@ -413,27 +453,29 @@ class SizeLegend(ListLegend):
     ----------
     sizes : array-like
         The sizes array of all circles on the plot,
-        the unit is point**2, same as :func:`matplotlib.Axes.scatter`
+        the unit is point**2, same as :meth:`matplotlib.axes.Axes.scatter`
     ax : Axes
         The axes to draw the legend
     labels : array-like
         The labels of the legend
     array : array-like
         The actual data used in plotting, will be used to
-        display labels if labels is not specific
+        display labels if labels are not specific
     colors : array-like
         The color of the entry
     show_at : array-like, default: [.25, .5, .75, 1.]
         The percentile to show the sizes
-    dtype
-    handle : {"circle", "rect"}
-        Currently, we support sized circle and rectangle
+    dtype : data type
+        This can be used to enforce the data type to display
+        the label
+    handle : str or sizable handle
+        You can use any markers in :module:matplotlib.markers
     handler_kw : mapping
         Use this to control the style of handler
     fill : bool, default: True
-        If False, the color will be drawn as edgecolor
+        If not filled, the color will draw on the edge.
     kwargs : mapping
-        Pass to `legendkit.ListLegend`
+        Pass to :func:`legendkit.legend`
 
 
     Examples
@@ -517,6 +559,17 @@ class SizeLegend(ListLegend):
         marker = _handle_marker.get(handle)
         if marker is None:
             marker = handle
+
+        # handler_kw
+        fc = handler_kw.pop("fc", handler_kw.pop("facecolor", None))
+        ec = handler_kw.pop("ec", handler_kw.pop("edgecolor", None))
+        lw = handler_kw.pop("lw", handler_kw.pop("linewidth", None))
+        if fc is not None:
+            handler_kw.setdefault("mfc", fc)
+        if ec is not None:
+            handler_kw.setdefault("mec", ec)
+        if lw is not None:
+            handler_kw.setdefault("mew", lw)
 
         for s, label, color in zip(handle_sizes,
                                    self._size_labels,

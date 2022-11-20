@@ -84,16 +84,37 @@ def stack(legends,
     title_fontproperties : dict
         The font dict that configurate title
 
-    Returns
-    -------
+    Examples
+    --------
+
+    Horizontal stack
+
+    .. plot::
+        :context: close-figs
+
+        >>> from legendkit import cat_legend, hstack
+        >>> _, ax = plt.subplots(figsize=(3, 1)); ax.set_axis_off()
+        >>> args = dict(colors = ["#A7D2CB", "#F2D388"],
+        ...             labels = ["Item 1", "Item 2"])
+        >>> legs = [cat_legend(**args, title=f"Legend {i+1}") for i in range(3)]
+        >>> hstack(legs, title="Horizontal Stack", loc="center", spacing=10, ax=ax)
+
+    .. plot::
+        :context: close-figs
+
+        >>> from legendkit import cat_legend, vstack
+        >>> _, ax = plt.subplots(figsize=(3, 3)); ax.set_axis_off()
+        >>> args = dict(colors = ["#A7D2CB", "#F2D388"],
+        ...             labels = ["Item 1", "Item 2"])
+        >>> legs = [cat_legend(**args, title=f"Legend {i+1}") for i in range(3)]
+        >>> vstack(legs, title="Vertical Stack", loc="center", spacing=10, ax=ax)
+
 
     """
     children = _create_children(legends)
     # Call different layout helper depends on orientation
-    if orientation == "vertical":
-        packer = VPacker
-    else:
-        packer = HPacker
+    packer = VPacker if orientation == "vertical" else HPacker
+
     children_pack = packer(pad=0,
                            sep=spacing,
                            align=align,

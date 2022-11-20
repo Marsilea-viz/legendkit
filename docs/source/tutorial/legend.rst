@@ -49,8 +49,7 @@ more styles to it.
     >>> legend(legend_items=legend_items)
 
 .. note::
-    Current supported semantic legend handles:
-    **square**, **rect**, **circle**, **line**, **boxplot**
+    For current supported semantic legend handles: see :func:`legendkit.legend`
 
 Create legend with handlers
 ---------------------------
@@ -88,15 +87,19 @@ So you don't need to configure it over and over again.
     :context: close-figs
 
     >>> from legendkit import cat_legend
-    >>> _, ax = plt.subplots(figsize=(1, 1)); ax.set_axis_off()
-    >>> cat_legend(colors=[".1", ".4", ".7"], labels=["1", "2", "3"], handles="circle")
+    >>> _, axes = plt.subplots(1, 4, figsize=(4, 1))
+    >>> for handle, ax in zip(["circle", "triangle", "square", "star"], axes):
+    ...     ax.set_axis_off()
+    ...     cat_legend(ax=ax, colors=[".1", ".4", ".7"], labels=["1", "2", "3"], handle=handle)
 
 
 .. plot::
     :context: close-figs
 
     >>> from legendkit import size_legend
-    >>> _, ax = plt.subplots(figsize=(1, 1.5)); ax.set_axis_off()
-    >>> size_legend(sizes=np.arange(0, 101, 1))
+    >>> _, axes = plt.subplots(1, 4, figsize=(4, 1.5))
+    >>> for handle, ax in zip(["circle", "triangle", "square", "star"], axes):
+    ...     ax.set_axis_off()
+    ...     size_legend(sizes=np.arange(0, 101, 1), handle=handle, ax=ax)
 
 

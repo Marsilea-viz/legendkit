@@ -2,5 +2,5 @@ Sphinx==5.2.2
 furo==2022.12.7
 matplotlib==3.5.3
 scipy==1.9.1
-pandas==1.5.0
+pandas==1.5.3
 numpydoc==1.4.0

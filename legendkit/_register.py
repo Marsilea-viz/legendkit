@@ -18,9 +18,9 @@ def register():
         # 'legend.numpoints': 1,  # the number of marker points in the legend line
         # 'legend.scatterpoints': 1,  # number of scatter points
         # 'legend.markerscale': 1.0,  # the relative size of legend markers vs. original
-        # 'legend.fontsize': 'medium',
+        'legend.fontsize': 8,
         # 'legend.labelcolor': None,
-        # 'legend.title_fontsize': None,  # None sets to the same as the default axes.
+        'legend.title_fontsize': 8,  # None sets to the same as the default axes.
 
         # Dimensions as fraction of font size:
         'legend.borderpad': 0.,  # 0.4,  # border whitespace

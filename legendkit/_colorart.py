@@ -214,6 +214,8 @@ class ColorArt(Artist):
         self._fontsize = self.prop.get_size_in_points()
         self._set_height_width(height, width)
         self.title = title
+        if title_fontsize is None:
+            title_fontsize = self._fontsize
         self.title_fontsize = title_fontsize
         self.title_fontproperties = title_fontproperties
         self.alignment = alignment
@@ -271,7 +273,7 @@ class ColorArt(Artist):
             height = self.height + y_offset + textpad
 
         # Add cbar
-        canvas = DrawingArea(width, height, clip=True)
+        canvas = DrawingArea(width, height, clip=False)
         # self._add_color_patches(self._cbar_canvas)
 
         cmap_caller = get_colormap(self.cmap)

@@ -551,7 +551,7 @@ class SizeLegend(ListLegend):
         else:
             self._size_labels = np.array([
                 np.percentile(array, q * 100) for q in show_at],
-                dtype=dtype)
+                dtype=dtype).round(3)
 
         size_handles = []
         size_labels = []

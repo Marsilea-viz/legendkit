@@ -82,7 +82,6 @@ class ColorArt(Artist):
                  flip=False,
                  # spacing='uniform',
                  orientation="vertical",
-                 shape="rect",
 
                  ticks=None,
                  format=None,
@@ -92,9 +91,9 @@ class ColorArt(Artist):
                  ticklabel_loc="auto",
                  ticklocation="both",
 
-                 # arguments from legend
                  width: float = None,  # relative to fontsize
                  height: float = None,
+                 # arguments from legend
                  borderpad: float = None,
                  textpad: float = None,
                  borderaxespad: float = None,
@@ -172,7 +171,6 @@ class ColorArt(Artist):
              'min': slice(1, None), 'max': slice(0, -1)},
             extend=extend)
         self.orientation = orientation
-        self.shape = shape
 
         # handle locator
         self._locator = None
@@ -215,7 +213,7 @@ class ColorArt(Artist):
         self._set_height_width(height, width)
         self.title = title
         if title_fontsize is None:
-            title_fontsize = self._fontsize
+            title_fontsize = mpl.rcParams["legend.title_fontsize"]
         self.title_fontsize = title_fontsize
         self.title_fontproperties = title_fontproperties
         self.alignment = alignment
@@ -244,8 +242,7 @@ class ColorArt(Artist):
             if width is not None:
                 self.width = width * self._fontsize
             else:
-                self.width = mpl.rcParams[
-                                 "legend.handlelength"] * self._fontsize
+                self.width = 2. * self._fontsize
             if height is not None:
                 self.height = height * self._fontsize
             else:
@@ -255,8 +252,7 @@ class ColorArt(Artist):
             if height is not None:
                 self.height = height * self._fontsize
             else:
-                self.height = mpl.rcParams[
-                                  "legend.handleheight"] * self._fontsize
+                self.height = 2. * self._fontsize
             if width is not None:
                 self.width = width * self._fontsize
             else:
@@ -265,15 +261,15 @@ class ColorArt(Artist):
     def _make_cbar_box(self):
         locs, ticks1, ticks2, ticklabels, offset_string = self._get_ticks()
         x_offset, y_offset = self._get_text_size(ticklabels)
-        width, height = self.width, self.height
+        da_width, da_height = self.width, self.height
         textpad = self.textpad * self._fontsize
         if self.orientation == "vertical":
-            width = self.width + x_offset + textpad
+            da_width = self.width + x_offset + textpad
         else:
-            height = self.height + y_offset + textpad
+            da_height = self.height + y_offset + textpad
 
         # Add cbar
-        canvas = DrawingArea(width, height, clip=False)
+        canvas = DrawingArea(da_width, da_height, clip=False)
         # self._add_color_patches(self._cbar_canvas)
 
         cmap_caller = get_colormap(self.cmap)
@@ -300,51 +296,45 @@ class ColorArt(Artist):
                 x += dx
         patches = PatchCollection(rects, match_original=True)
 
-        if self.shape == "ellipse":
-            patches.set_clip_path(
-                Ellipse((self.width / 2, self.height / 2),
-                        self.width, self.height,
-                        transform=canvas.get_transform()))
         canvas.add_artist(patches)
 
         # Add ticks
-        if self.shape == "rect":
-            # the tick will only be added if shape is rect
-            ticks1_lines = LineCollection(
-                ticks1,
-                color=self.tick_color, zorder=100,
-                visible=True, linewidth=self.tick_width)
+        # the tick will only be added if shape is rect
+        ticks1_lines = LineCollection(
+            ticks1,
+            color=self.tick_color, zorder=100,
+            visible=True, linewidth=self.tick_width)
 
-            ticks2_lines = LineCollection(
-                ticks2,
-                color=self.tick_color, zorder=100,
-                visible=True, linewidth=self.tick_width)
+        ticks2_lines = LineCollection(
+            ticks2,
+            color=self.tick_color, zorder=100,
+            visible=True, linewidth=self.tick_width)
 
-            if self.ticklocation == "both":
-                canvas.add_artist(ticks1_lines)
-                canvas.add_artist(ticks2_lines)
-            elif self.ticklocation in ["bottom", "left"]:
-                canvas.add_artist(ticks1_lines)
-            else:
-                canvas.add_artist(ticks2_lines)
+        if self.ticklocation == "both":
+            canvas.add_artist(ticks1_lines)
+            canvas.add_artist(ticks2_lines)
+        elif self.ticklocation in ["bottom", "left"]:
+            canvas.add_artist(ticks1_lines)
+        else:
+            canvas.add_artist(ticks2_lines)
 
-            label_x = self.width + textpad
-            label_y = self.height + textpad
-            va, ha = "bottom", "center"
+        label_x = self.width + textpad
+        label_y = self.height + textpad
+        va, ha = "bottom", "center"
+        if self.orientation == "vertical":
+            va, ha = "center", "left"
+        options = dict(va=va, ha=ha, fontsize=self._fontsize,
+                       fontproperties=self.prop)
+        for loc, label in zip(locs, ticklabels):
             if self.orientation == "vertical":
-                va, ha = "center", "left"
-            options = dict(va=va, ha=ha, fontsize=self._fontsize,
-                           fontproperties=self.prop)
-            for loc, label in zip(locs, ticklabels):
-                if self.orientation == "vertical":
-                    t = Text(label_x, loc, label, **options)
-                else:
-                    t = Text(loc, label_y, label, **options)
-                canvas.add_artist(t)
+                t = Text(label_x, loc, label, **options)
+            else:
+                t = Text(loc, label_y, label, **options)
+            canvas.add_artist(t)
 
         if self.title is not None:
             if self.title_fontproperties is None:
-                textprops = dict(fontweight=600)
+                textprops = dict(fontweight=600, fontsize=self.title_fontsize)
             else:
                 textprops = dict(fontproperties=self.title_fontproperties)
             title_canvas = TextArea(self.title, textprops=textprops)
@@ -384,8 +374,9 @@ class ColorArt(Artist):
             x_sizes.append(bbox.xmax - bbox.xmin)
             y_sizes.append(bbox.ymax - bbox.ymin)
             t.remove()  # so it won't be drawn
-        x_offset = np.max(x_sizes) / (fig.dpi / 72)
-        y_offset = np.max(y_sizes) / (fig.dpi / 72)
+        dpi_cor = renderer.points_to_pixels(1.)
+        x_offset = np.max(x_sizes) / dpi_cor
+        y_offset = np.max(y_sizes) / dpi_cor
         return x_offset, y_offset
 
     def _process_values(self):

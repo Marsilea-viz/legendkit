@@ -46,6 +46,10 @@ _handle_marker = {
 }
 
 
+def _parse_marker(m):
+    pass
+
+
 def _get_legend_handles(axs, legend_handler_map=None):
     """
     Return a generator of artists that can be used as handles in
@@ -133,6 +137,8 @@ class ListLegend(Legend):
         to place the legend ouside the axes.
     deviation : float
         The space between legend and axes if legend is placed ouside axes.
+    frameon : bool, default: False
+        Draw a frame around legend. Legendkit will not show frame by default
     kwargs :
         For other paramters, please see :class:`matplotlib.legend.Legend`
 
@@ -190,6 +196,7 @@ class ListLegend(Legend):
                  deviation=0.05,
                  bbox_to_anchor=None,
                  bbox_transform=None,
+                 frameon=False,
                  fontsize=None,
                  prop=None,
                  handleheight=None,
@@ -221,6 +228,7 @@ class ListLegend(Legend):
 
         def val_or_rc(val, rc_name):
             return val if val is not None else mpl.rcParams[rc_name]
+
         self.handlelength = val_or_rc(handlelength, 'legend.handlelength')
         self.handleheight = val_or_rc(handleheight, 'legend.handleheight')
         handle_size = min(self.handleheight, self.handlelength)
@@ -273,6 +281,7 @@ class ListLegend(Legend):
             fontsize=self._fontsize,
             handleheight=self.handleheight,
             handlelength=self.handlelength,
+            frameon=frameon,
         )
 
         final_options = {**default_kwargs, **kwargs}
@@ -363,6 +372,7 @@ _sizer = {
 }
 
 
+# TODO: handle should support path
 class CatLegend(ListLegend):
     """Categorical legend with same handles
 
@@ -446,6 +456,7 @@ class CatLegend(ListLegend):
                          **options)
 
 
+# Modified from mpl.collections.PathCollection.legend_elements
 class SizeLegend(ListLegend):
     """Create legend that represent the size of circle
 
@@ -513,54 +524,59 @@ class SizeLegend(ListLegend):
                  labels=None,
                  array=None,
                  colors=None,
+                 fmt=None,  # label
+                 func=lambda x: x,  # label
                  show_at=None,
-                 dtype=None,
                  handle="circle",
                  handler_kw=None,
                  fill=True,
+                 dtype=None,  # deprecate
                  **kwargs
                  ):
-        if show_at is None:
-            show_at = [.25, .5, .75, 1.]
-        if handler_kw is None:
-            handler_kw = {}
-        num = len(show_at)
-
-        sizes = np.asarray(sizes)
-        if dtype is None:
-            if array is not None:
-                dtype = array.dtype
-            else:
-                dtype = sizes.dtype
-
-        handle_sizes = np.array(
-            [np.percentile(sizes, q * 100) for q in show_at],
-            dtype=dtype)
-
-        if colors is None:
-            self._size_colors = ['black' for _ in range(num)]
-        elif is_color_like(colors):
-            self._size_colors = [colors for _ in range(num)]
-        else:
-            self._size_colors = colors
-
-        if (array is None) & (labels is None):
-            self._size_labels = handle_sizes
-        elif labels is not None:
-            self._size_labels = labels
-        else:
-            self._size_labels = np.array([
-                np.percentile(array, q * 100) for q in show_at],
-                dtype=dtype).round(3)
 
         size_handles = []
         size_labels = []
 
-        marker = _handle_marker.get(handle)
-        if marker is None:
-            marker = handle
+        sizes = np.asarray(sizes).flatten()
+        array = sizes if array is None else np.asarray(array).flatten()
+        if sizes.size != array.size:
+            raise ValueError("The length of size array "
+                             "does not match data array")
+        sort_ix = np.argsort(sizes)
+        sizes = sizes[sort_ix]
+        array = array[sort_ix]
+
+        if fmt is None:
+            fmt = mpl.ticker.ScalarFormatter(useOffset=False, useMathText=True)
+        elif isinstance(fmt, str):
+            fmt = mpl.ticker.StrMethodFormatter(fmt)
+        fmt.create_dummy_axis()
+
+        u = np.unique(array)
+        display_v = func(u)
+        display_min, display_max = np.min(display_v), np.max(display_v)
+        fmt.axis.set_view_interval(display_min, display_max)
+        fmt.axis.set_data_interval(display_min, display_max)
+
+        # decide on locator to use
+        if show_at is None:
+            show_at = np.array([.25, .5, .75, 1.])
+        show_at = np.asarray(show_at)
+        ix = np.clip((show_at * len(sizes) - 1), 0, len(sizes) - 1).astype(int)
+        handle_sizes = sizes[ix]
+        handle_labels = array[ix]
+        handle_labels = func(handle_labels)
+
+        num_entry = len(handle_labels)
+        if colors is None:
+            handle_colors = ['black' for _ in range(num_entry)]
+        elif is_color_like(colors):
+            handle_colors = [colors for _ in range(num_entry)]
+        else:
+            handle_colors = colors
 
         # handler_kw
+        handler_kw = {} if handler_kw is None else handler_kw
         fc = handler_kw.pop("fc", handler_kw.pop("facecolor", None))
         ec = handler_kw.pop("ec", handler_kw.pop("edgecolor", None))
         lw = handler_kw.pop("lw", handler_kw.pop("linewidth", None))
@@ -571,9 +587,16 @@ class SizeLegend(ListLegend):
         if lw is not None:
             handler_kw.setdefault("mew", lw)
 
-        for s, label, color in zip(handle_sizes,
-                                   self._size_labels,
-                                   self._size_colors):
+        marker = _handle_marker.get(handle)
+        if marker is None:
+            marker = handle
+
+        if hasattr(fmt, "set_locs"):
+            fmt.set_locs(handle_labels)
+
+        for i, (s, label, color) in enumerate(zip(handle_sizes,
+                                                  handle_labels,
+                                                  handle_colors)):
             if fill:
                 options = {'color': color, 'mew': .75, **handler_kw}
             else:
@@ -582,7 +605,10 @@ class SizeLegend(ListLegend):
             ms = MarkerStyle(marker=marker)
             size_handles.append(Line2D([0], [0], ls="", marker=ms,
                                        markersize=np.sqrt(s), **options))
-            size_labels.append(label)
+            if labels is not None:
+                size_labels.append(labels[i])
+            else:
+                size_labels.append(fmt(label))
 
         options = dict(
             frameon=False,

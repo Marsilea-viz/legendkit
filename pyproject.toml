@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "legendkit"
-version = "0.2.7"
+version = "0.2.8"
 description = "Legend creation and manipulation with ease for matplotlib"
 authors = ["Mr-Milk <yb97643@um.edu.mo>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/Mr-Milk/legendkit"
+repository = "https://github.com/Heatgraphy/legendkit"
 classifiers = [
       "License :: OSI Approved :: MIT License",
       "Programming Language :: Python :: 3",

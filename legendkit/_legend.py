@@ -432,7 +432,7 @@ class CatLegend(ListLegend):
         legend_items = []
         for c, name in zip(colors, labels):
             if fill:
-                options = {'color': c, **handler_kw}
+                options = {'fc': c, **handler_kw}
             else:
                 options = {'ec': c, 'fc': 'none', **handler_kw}
             legend_items.append((handle, name, options))
@@ -598,7 +598,7 @@ class SizeLegend(ListLegend):
                                                   handle_labels,
                                                   handle_colors)):
             if fill:
-                options = {'color': color, 'mew': .75, **handler_kw}
+                options = {'mfc': color, 'mew': .75, **handler_kw}
             else:
                 options = {'mec': color, 'mfc': 'none',
                            'mew': .75, **handler_kw}

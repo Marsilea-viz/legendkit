@@ -1,6 +1,5 @@
-
 def add_x(x, y, offset):
-    return x+ offset, y
+    return x + offset, y
 
 
 def add_y(x, y, offset):
@@ -34,13 +33,28 @@ class Locs:
         'out right lower': ('lower left', (1, 0), add_x),
     }
 
+    LOC_OPTIONS = [
+        'lower left', 'lower center', 'lower right',
+        'upper left', 'upper center', 'upper right',
+        'center left', 'center', 'center right',
+        'out upper left', 'out upper center', 'out upper right',
+        'out lower left', 'out lower center', 'out lower right',
+        'out left upper', 'out left center', 'out left lower',
+        'out right upper', 'out right center', 'out right lower'
+    ]
+
     def transform(self,
                   ax,
-                  loc,
+                  loc=None,
                   bbox_to_anchor=None,
                   bbox_transform=None,
                   deviation=0,
                   ):
+        if loc is None:
+            loc = "upper right"
+        if loc not in self.LOC_OPTIONS:
+            msg = f"`loc` must be one of {', '.join(self.LOC_OPTIONS)}"
+            raise ValueError(msg)
         replacement = self.combs.get(loc)
         if replacement is not None:
             loc = replacement[0]

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "legendkit"
-version = "0.2.8"
+version = "0.3.0"
 description = "Legend creation and manipulation with ease for matplotlib"
 authors = ["Mr-Milk <yb97643@um.edu.mo>"]
 license = "MIT"
@@ -18,7 +18,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ["^3.8"]
-matplotlib = "^3.5"
+matplotlib = "^3.6"
 
 [tool.poetry.group.dev.dependencies]
 Sphinx = "^6.0.0"

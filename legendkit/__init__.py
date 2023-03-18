@@ -4,6 +4,11 @@ from ._legend import ListLegend, CatLegend, SizeLegend
 # To register default setting and legend handlers
 from ._register import register
 from .layout import vstack, hstack
-from .api import legend, cat_legend, size_legend, colorbar, colorart
 
 register()
+
+colorbar = Colorbar
+colorart = ColorArt
+legend = ListLegend
+cat_legend = CatLegend
+size_legend = SizeLegend

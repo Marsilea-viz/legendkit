@@ -58,7 +58,7 @@ class CircleHandler(HandlerPatch):
 
 
 class BoxplotHanlder(HandlerPatch):
-    box_w = 0.9
+    box_w = 0.8
     box_h = 0.6
 
     def _create_patch(self, legend, orig_handle,

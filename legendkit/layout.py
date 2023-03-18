@@ -54,7 +54,7 @@ def stack(legends,
           alignment: str = "center",
           title_fontproperties: Dict = None
           ):
-    """
+    """Stack multiple artists together
 
     Parameters
     ----------

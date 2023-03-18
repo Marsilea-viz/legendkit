@@ -18,16 +18,16 @@ def register():
         # 'legend.numpoints': 1,  # the number of marker points in the legend line
         # 'legend.scatterpoints': 1,  # number of scatter points
         # 'legend.markerscale': 1.0,  # the relative size of legend markers vs. original
-        'legend.fontsize': 8,
+        'legend.fontsize': 10,
         # 'legend.labelcolor': None,
-        'legend.title_fontsize': 8,  # None sets to the same as the default axes.
+        'legend.title_fontsize': 10,  # None sets to the same as the default axes.
 
         # Dimensions as fraction of font size:
         'legend.borderpad': 0.,  # 0.4,  # border whitespace
-        'legend.labelspacing': 0.3,  # the vertical space between the legend entries
-        'legend.handlelength': 2.0,  # 2.0,  # the length of the legend lines
-        'legend.handleheight': 2.0,  # 0.7,  # the height of the legend handle
-        'legend.handletextpad': 0.3,  # 0.8,  # the space between the legend line and legend text
+        'legend.labelspacing': 0.5,  # the vertical space between the legend entries
+        'legend.handlelength': 1.0,  # 2.0,  # the length of the legend lines
+        'legend.handleheight': 1.0,  # 0.7,  # the height of the legend handle
+        'legend.handletextpad': 0.5,  # 0.8,  # the space between the legend line and legend text
         'legend.borderaxespad': 0.5,  # 0.5,  # the border between the axes and legend edge
         'legend.columnspacing': 1.0  # 2.0,  # column separation
     }

@@ -11,7 +11,7 @@ from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.font_manager import FontProperties
 from matplotlib.offsetbox import DrawingArea, VPacker, TextArea, \
     AnchoredOffsetbox
-from matplotlib.patches import Rectangle, Ellipse
+from matplotlib.patches import Rectangle
 from matplotlib.text import Text
 
 from ._locs import Locs
@@ -26,41 +26,81 @@ def get_colormap(cmap):
 class ColorArt(Artist):
     """Axes-independent colorbar
 
+    Most of the time, it's safe to use :func:`colorart`
+    as a drop-in replacement for :func:`colorbar`.
+
     Parameters
     ----------
-    mappable
-    cmap
-    norm
-    ax
-    alpha
-    values
-    boundaries
-    flip
-    orientation
-    ticks
-    format
-    tick_width
-    tick_size
-    tick_color
-    ticklocation
-    width
-    height
-    borderpad
-    textpad
-    borderaxespad
-    prop
-    fontsize
-    title
-    title_fontsize
-    title_fontproperties
-    alignment
-    loc
-    deviation
+    mappable : :class:`ScalarMapping <matplotlib.cm.ScalarMappable>`
+        The mappable whose colormap and norm will be used.
+    norm : :class:`Normalize <matplotlib.colors.Normalize>`
+        The normalization to use.
+    cmap : :class:`Colormap <matplotlib.colors.Colormap>`
+        The colormap to use.
+    ax : :class:`Axes <matplotlib.axes.Axes>`
+        The axes to draw colorbar.
+    alpha : float
+        Control the transparency
+    values :
+    boundaries :
+    flip : bool
+        Flip the
+    orientation : {'vertical', 'horizontal'}
+        The orientation of colorart.
+    ticks : list of ticks or Locator
+    format : str or Formatter
+    tick_width : float
+        The width of tick.
+    tick_size : float
+        The length of tick.
+    tick_color : color
+        The color of tick.
+    ticklocation : {'both', 'left', 'right', 'top', 'bottom'}
+        The location of the colorbar ticks.
+    width : float
+        The width of colorart
+    height : float
+        The height of colorart
+    borderpad : float, default: `rcParams["legend.borderpad"]`
+        The fractional whitespace inside the colorart border,
+        in font-size units.
+    textpad : float, default: `rcParams["legend.handletextpad"]`
+        The space between label and the colorart
+    borderaxespad : float, default: `rcParams["legend.borderaxespad"]`
+        The pad between the axes and colorart border, in font-size units.
+    prop : :class:`FontProperties <matplotlib.font_manager.FontProperties>`
+        The font properties of the colorart.
+    fontsize : float
+        The fontsize
+    title : str
+        The title of colorart
+    title_fontsize : float
+        The fontsize of title
+    title_fontproperties : :class:`FontProperties <matplotlib.font_manager.FontProperties>`
+        The fontproperties of title
+    alignment : {'center', 'left', 'right'}, default: 'center'
+        The alignment of the colorart and title.
+    loc : str
+        Apart from the default location code, you can add 'out' as prefix
+        to place the legend ouside the axes.
+        See :ref:`all available options. <tutorial/title&layout:Legend Placement>`
+    deviation : float
+        The space between colorbar and axes if place outside
     bbox_to_anchor
     bbox_transform
     rasterized : bool
         Whether to rasterize the colorart,
         reduce file size in vectorized backend.
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from legendkit import colorart
+        >>> data = np.random.rand(10, 10)
+        >>> mp = plt.pcolormesh(data, cmap="RdBu")
+        >>> colorart(mp)
 
     """
 
@@ -80,7 +120,7 @@ class ColorArt(Artist):
                  # extendfrac=None,
                  # extendrect=False,
                  flip=False,
-                 # spacing='uniform',
+                 spacing='uniform',
                  orientation="vertical",
 
                  ticks=None,
@@ -146,7 +186,7 @@ class ColorArt(Artist):
         _api.check_in_list(['vertical', 'horizontal'], orientation=orientation)
         _api.check_in_list(['both', 'left', 'right', 'top', 'bottom'],
                            ticklocation=ticklocation)
-        # _api.check_in_list(['uniform', 'proportional'], spacing=spacing)
+        _api.check_in_list(['uniform', 'proportional'], spacing=spacing)
 
         extend = None
         if extend is None:
@@ -165,7 +205,7 @@ class ColorArt(Artist):
         self.norm = norm
         self.values = values
         self.boundaries = boundaries
-        # self.spacing = spacing
+        self.spacing = spacing
         self._inside = _api.check_getitem(
             {'neither': slice(0, None), 'both': slice(1, -1),
              'min': slice(1, None), 'max': slice(0, -1)},
@@ -217,6 +257,9 @@ class ColorArt(Artist):
         self.title_fontsize = title_fontsize
         self.title_fontproperties = title_fontproperties
         self.alignment = alignment
+
+        if loc is None:
+            loc = "out right center"
 
         self._loc, self._bbox_to_anchor, self._bbox_transform = \
             Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
@@ -274,28 +317,37 @@ class ColorArt(Artist):
 
         cmap_caller = get_colormap(self.cmap)
         colors_list = cmap_caller(np.arange(cmap_caller.N))
+
         if self.flip:
             colors_list = colors_list[::-1]
 
         rects = []
-        x, y = 0, 0
-        if self.orientation == "vertical":
-            dy = self.height / len(colors_list)
-            for c in colors_list:
-                rects.append(Rectangle((x, y), width=self.width, height=dy,
-                                       fc=c, antialiased=False,
-                                       alpha=self.alpha))
-                y += dy
-
+        if isinstance(self.norm, colors.BoundaryNorm):
+            if self.orientation == "vertical":
+                for i, (y1, y2) in enumerate(zip(locs, locs[1::])):
+                    rects.append(Rectangle((0, y1), width=self.width,
+                                           height=y2-y1, fc=colors_list[i]))
+            else:
+                for i, (x1, x2) in enumerate(zip(locs, locs[1::])):
+                    rects.append(Rectangle((x1, 0), width=x2-x1,
+                                           height=self.height,
+                                           fc=colors_list[i]))
         else:
-            dx = self.width / len(colors_list)
+            x, y = 0, 0
             for c in colors_list:
-                rects.append(Rectangle((x, y), width=dx, height=self.height,
+                if self.orientation == "vertical":
+                    dy = self.height / len(colors_list)
+                    rh, rw = dy, self.width
+                    y += dy
+                else:
+                    dx = self.width / len(colors_list)
+                    rh, rw = self.height, dx
+                    x += dx
+                rects.append(Rectangle((x, y), width=rw, height=rh,
                                        fc=c, antialiased=False,
                                        alpha=self.alpha))
-                x += dx
-        patches = PatchCollection(rects, match_original=True)
 
+        patches = PatchCollection(rects, match_original=True)
         canvas.add_artist(patches)
 
         # Add ticks
@@ -515,7 +567,9 @@ class ColorArt(Artist):
         formatter.set_axis(locator.axis)
 
         b = np.array(locator())
-        if isinstance(locator, ticker.LogLocator):
+        if isinstance(self.norm, colors.BoundaryNorm):
+            pass
+        elif isinstance(locator, ticker.LogLocator):
             eps = 1e-10
             b = b[(b <= intv[1] * (1 + eps)) & (b >= intv[0] * (1 - eps))]
             # b = b[(b >= intv[0] * (1 - eps))]
@@ -534,25 +588,29 @@ class ColorArt(Artist):
             locs = np.array([normalize(i) for i in v])
         else:
             locs = np.array([self.norm(i) for i in v])
-        if self.orientation == "vertical":
-            locs = (
-                           1 - locs) * self.height if self.flip else locs * self.height
 
-            ticks_left = [[(0, loc), (self.width * self.tick_size, loc)] for
-                          loc in locs]
-            ticks_right = [
-                [(self.width, loc), (self.width * (1 - self.tick_size), loc)]
-                for loc in locs]
-            return locs, ticks_left, ticks_right
+        h, w = self.height, self.width
+        if self.orientation == "horizontal":
+            h, w = w, h
+
+        if isinstance(self.norm, colors.BoundaryNorm) & \
+                (self.spacing == "uniform"):
+            locs = np.linspace(0, h, len(locs))
         else:
-            locs = (1 - locs) * self.width if self.flip else locs * self.width
+            locs = (1 - locs) * h if self.flip else locs * h
 
-            ticks_bottom = [[(loc, 0), (loc, self.height * self.tick_size)] for
-                            loc in locs]
-            ticks_top = [
-                [(loc, self.height), (loc, self.height * (1 - self.tick_size))]
-                for loc in locs]
-            return locs, ticks_bottom, ticks_top
+        ticks1, ticks2 = [], []
+        for loc in locs:
+            if self.orientation == "vertical":
+                t1 = [(0, loc), (w * self.tick_size, loc)]
+                t2 = [(w, loc), (w * (1 - self.tick_size), loc)]
+            else:
+                t1 = [(loc, 0), (loc, w * self.tick_size)]
+                t2 = [(loc, w), (loc, w * (1 - self.tick_size))]
+            ticks1.append(t1)
+            ticks2.append(t2)
+
+        return locs, ticks1, ticks2
 
     def _extend_lower(self):
         """Return whether the lower limit is open ended."""
@@ -576,5 +634,3 @@ class ColorArt(Artist):
     def set_border(self, *args):
         # TODO: allow user to draw border on the colorbar
         pass
-
-

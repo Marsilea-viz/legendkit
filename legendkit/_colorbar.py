@@ -13,19 +13,29 @@ from ._locs import Locs
 class Colorbar(MPLColorbar):
     """Colorbar based on Axes
 
+    For other parameters, see `colorbar <matplotlib.color.Colorbar>`
+
     Parameters
     ----------
-    mappable
-    norm
-    cmap
-    ax
+    mappable : :class:`ScalarMapping <matplotlib.cm.ScalarMappable>`
+        The mappable whose colormap and norm will be used.
+    norm : :class:`Normalize <matplotlib.colors.Normalize>`
+        The normalization to use.
+    cmap : :class:`Colormap <matplotlib.colors.Colormap>`
+        The colormap to use.
+    ax : :class:`Axes <matplotlib.axes.Axes>`
+        The axes to draw colorbar.
     style : {'white', 'normal'}, default: 'white'
     width : float
         The width of colorbar
     height : float
         The height of colorbar
     loc : str
-        The location of colorbar
+        Apart from the default location code, you can add 'out' as prefix
+        to place the legend ouside the axes.
+        See :ref:`all available options. <tutorial/title&layout:Legend Placement>`
+    deviation : float
+        The space between colorbar and axes if place outside
     bbox_to_anchor
     bbox_transform
     axes_class
@@ -39,7 +49,17 @@ class Colorbar(MPLColorbar):
         The alignment of title and colorbar
     title_fontproperties
     colorbar_options : mapping
-        Pass to `matplotlib.colorbar.Colorbar`
+        Pass to :class:`matplotlib.colorbar.Colorbar`
+
+    Examples
+    --------
+
+    .. plot::
+
+        >>> from legendkit import colorbar
+        >>> data = np.random.rand(10, 10)
+        >>> mp = plt.pcolormesh(data, cmap="RdBu")
+        >>> colorbar(mp)
 
     """
 
@@ -74,11 +94,7 @@ class Colorbar(MPLColorbar):
         if ax is None:
             ax = plt.gca()
         if loc is None:
-            loc = "center left"
-        if bbox_to_anchor is None:
-            bbox_to_anchor = (1, 0.5, 0, 0)
-        if bbox_transform is None:
-            bbox_transform = ax.transAxes
+            loc = "out right center"
 
         if (width is None) & (height is None):
             width, height = (0.3, 1.5)

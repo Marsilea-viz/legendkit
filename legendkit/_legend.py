@@ -21,7 +21,7 @@ from .handles import RectItem, CircleItem, LineItem, BoxplotItem
 _handlers = {
     # 'square': SquareItem,
     'rect': RectItem,
-    'circle': CircleItem,
+    # 'circle': CircleItem,
     'line': LineItem,
     'boxplot': BoxplotItem,
 }
@@ -113,8 +113,8 @@ class ListLegend(Legend):
 
     Parameters
     ----------
-    ax : Axes
-        The axes to draw on
+    ax : :class:`Axes <matplotlib.axes.Axes>`
+        The axes to draw the legend
     legend_items : array-like of (handle, label, styles)
         See examples
     handles : array-like
@@ -123,7 +123,7 @@ class ListLegend(Legend):
         A list of legend labels
     title_loc : {'top', 'bottom', 'left', 'right'}
         The location of title
-    alignment : {'top', 'bottom', 'left', 'right', 'center'}
+    alignment : {'top', 'bottom', 'left', 'right', 'center'}, default: 'left'
         How to align the whole legendbox,
         if title is placed on top or bottom, default is 'left';
         if title is placed on left and right, default is 'center';
@@ -135,12 +135,13 @@ class ListLegend(Legend):
     loc : str
         Apart from the default location code, you can add 'out' as prefix
         to place the legend ouside the axes.
+        See :ref:`all available options. <tutorial/title&layout:Legend Placement>`
     deviation : float
         The space between legend and axes if legend is placed ouside axes.
     frameon : bool, default: False
         Draw a frame around legend. Legendkit will not show frame by default
     kwargs :
-        For other paramters, please see :class:`matplotlib.legend.Legend`
+        For other paramters, please see :class:`Legend <matplotlib.legend.Legend>`
 
 
     Examples
@@ -261,10 +262,13 @@ class ListLegend(Legend):
             # make matplotlib handles this
             legend_handles, legend_labels = handles, labels
 
-        loc, bbox_to_anchor, bbox_transform = \
-            Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
-                             bbox_transform=bbox_transform,
-                             deviation=deviation)
+        if loc is None:
+            loc = "best"
+        else:
+            loc, bbox_to_anchor, bbox_transform = \
+                Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
+                                 bbox_transform=bbox_transform,
+                                 deviation=deviation)
         if handler_map is None:
             handler_map = {}
         handler_map.update({RectItem: RectHandler(),
@@ -365,13 +369,6 @@ class ListLegend(Legend):
         self._legend_box.set_offset(self._findoffset)
 
 
-_sizer = {
-    "small": 0.4,
-    "medium": 0.7,
-    "large": 1.1,
-}
-
-
 # TODO: handle should support path
 class CatLegend(ListLegend):
     """Categorical legend with same handles
@@ -381,6 +378,8 @@ class CatLegend(ListLegend):
 
     Parameters
     ----------
+    ax : :class:`Axes <matplotlib.axes.Axes>`
+        The axes to draw the legend
     colors : array-like
         The color for each legend item
     labels : array-like
@@ -391,7 +390,7 @@ class CatLegend(ListLegend):
         Use this to control the style of handler
     fill : bool, default: True
         If not filled, the color will draw on the edge.
-    size : str or number, {"small", "medium", "large"}
+    size : float, default: 1.0
         The size of legend handle
     kwargs :
         Pass to :func:`legendkit.legend`
@@ -418,7 +417,7 @@ class CatLegend(ListLegend):
                  ax=None,
                  colors=None,
                  labels=None,
-                 size="medium",
+                 size=1,
                  handle=None,
                  handler_kw=None,
                  fill=True,
@@ -432,14 +431,10 @@ class CatLegend(ListLegend):
         legend_items = []
         for c, name in zip(colors, labels):
             if fill:
-                options = {'fc': c, **handler_kw}
+                options = {'fc': c, 'ec': c, **handler_kw}
             else:
                 options = {'ec': c, 'fc': 'none', **handler_kw}
             legend_items.append((handle, name, options))
-        if isinstance(size, str):
-            size = _sizer[size]
-        else:
-            size = size
 
         options = dict(
             ax=ax,
@@ -447,7 +442,7 @@ class CatLegend(ListLegend):
             handleheight=size,
             handlelength=size,
             handletextpad=0.5,
-            labelspacing=0.3,
+            labelspacing=0.5,
             borderpad=0,
         )
         options = {**options, **kwargs}
@@ -463,9 +458,9 @@ class SizeLegend(ListLegend):
     Parameters
     ----------
     sizes : array-like
-        The sizes array of all circles on the plot,
-        the unit is point**2, same as :meth:`matplotlib.axes.Axes.scatter`
-    ax : Axes
+        The sizes array of all circles on the plot, the unit is point**2,
+        same as :meth:`scatter <matplotlib.axes.Axes.scatter>`.
+    ax : :class:`Axes <matplotlib.axes.Axes>`
         The axes to draw the legend
     labels : array-like
         The labels of the legend
@@ -474,11 +469,12 @@ class SizeLegend(ListLegend):
         display labels if labels are not specific
     colors : array-like
         The color of the entry
+    fmt : str, :class:`Formatter <matplotlib.ticker.Formatter>`
+        The format or formatter to use for the labels.
+    func : Callable, default: `lambda x: x`
+        A function to calculate the labels.
     show_at : array-like, default: [.25, .5, .75, 1.]
         The percentile to show the sizes
-    dtype : data type
-        This can be used to enforce the data type to display
-        the label
     handle : str or sizable handle
         You can use any markers in :module:matplotlib.markers
     handler_kw : mapping
@@ -505,9 +501,7 @@ class SizeLegend(ListLegend):
     .. plot::
         :context: close-figs
 
-        >>> from legendkit import size_legend
-        >>> sizes = np.arange(0, 101, 10)
-        >>> array = np.arange(0, 201, 10)
+        >>> array = sizes * 10
         >>> _, ax = plt.subplots(figsize=(1, 1.5)); ax.set_axis_off()
         >>> size_legend(sizes, array=array, 
         ...             show_at=[.2, .4, .6, .8, 1.],
@@ -530,7 +524,6 @@ class SizeLegend(ListLegend):
                  handle="circle",
                  handler_kw=None,
                  fill=True,
-                 dtype=None,  # deprecate
                  **kwargs
                  ):
 
@@ -598,7 +591,8 @@ class SizeLegend(ListLegend):
                                                   handle_labels,
                                                   handle_colors)):
             if fill:
-                options = {'mfc': color, 'mew': .75, **handler_kw}
+                options = {'mec': color, 'mfc': color,
+                           'mew': .75, **handler_kw}
             else:
                 options = {'mec': color, 'mfc': 'none',
                            'mew': .75, **handler_kw}

@@ -43,7 +43,7 @@ more styles to it.
     >>> legend_items = [
     ...     ('square', 'Item 1'), # use default style
     ...     ('rect', 'Item 2', dict(color='#01949A')),
-    ...     ('circle', 'Item 3', dict(ec='#DB1F48', lw=2)),
+    ...     ('circle', 'Item 3', dict(ec='#DB1F48', lw=1.5)),
     ...     ('boxplot', 'Box 1', dict(fc='#E5DDC8')),
     ... ]
     >>> legend(legend_items=legend_items)
@@ -100,6 +100,6 @@ So you don't need to configure it over and over again.
     >>> _, axes = plt.subplots(1, 4, figsize=(4, 1.5))
     >>> for handle, ax in zip(["circle", "triangle", "square", "star"], axes):
     ...     ax.set_axis_off()
-    ...     size_legend(sizes=np.arange(0, 101, 1), handle=handle, ax=ax)
+    ...     size_legend(sizes=np.arange(1, 101, 1), handle=handle, ax=ax)
 
 

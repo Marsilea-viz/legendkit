@@ -11,7 +11,7 @@ Use legendkit layout features to help you out.
     :context: close-figs
 
     >>> from legendkit import cat_legend, vstack, hstack
-    >>> _, ax = plt.subplots(figsize=(7, 3)); ax.set_axis_off()
+    >>> _, ax = plt.subplots(figsize=(6, 3)); ax.set_axis_off()
     >>> args = dict(
     ...     colors = ["#A7D2CB", "#F2D388"],
     ...     labels = ["Item 1", "Item 2"],

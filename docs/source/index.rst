@@ -10,7 +10,11 @@ Legendkit: Legend made easy for matplotlib
 
 When you want to create or adjust the legend in matplotlib,
 things can get dirty.
-LegendKit may solve your headache.
+Legendkit may solve your headache.
+
+.. plot:: cover.py
+   :include-source: false
+
 
 Installation
 ------------
@@ -21,21 +25,19 @@ Installation
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Sections:
+   :maxdepth: 1
+   :caption: Tutorial
+   :hidden:
 
    tutorial/legend
    tutorial/title&layout
    tutorial/colorbar
    tutorial/layout
    tutorial/matplotlib_legend
+
+.. toctree::
+   :maxdepth: 1
+   :caption: API
+   :hidden:
+
    api.rst
-
-
-
-Indices and tables
-------------------
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

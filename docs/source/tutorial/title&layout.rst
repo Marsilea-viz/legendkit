@@ -32,7 +32,7 @@ Title location
 .. plot::
     :context: close-figs
 
-    >>> _, ax = plt.subplots(figsize=(3, 2)); ax.set_axis_off()
+    >>> _, ax = plt.subplots(figsize=(3, 2.5)); ax.set_axis_off()
     >>> cat_legend(**args, title="Title Top", title_loc="top", loc="upper left")
     >>> cat_legend(**args, title="Title Bottom", title_loc="bottom", loc="upper right")
     >>> cat_legend(**args, title="Title Left", title_loc="left", loc="center", ncol=2)
@@ -62,6 +62,8 @@ Apart from default locations support by matplotlib, we offer you extra location 
 to place your legend outside the axes to avoid overlap. All options start with `out`,
 the second word is the side of axes to put the legend, the third word is the position.
 You can use `deviation` to control the gap between legend and your axes.
+
+.. _loc:
 
 .. plot::
     :context: close-figs

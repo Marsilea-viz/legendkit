@@ -4,7 +4,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import _api
-from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.colors import is_color_like
 from matplotlib.font_manager import FontProperties
@@ -475,6 +474,8 @@ class SizeLegend(ListLegend):
         A function to calculate the labels.
     show_at : array-like, default: [.25, .5, .75, 1.]
         The percentile to show the sizes
+    spacing : {"percentile", "uniform"}, default: "percentile"
+        The spacing of the sizes
     handle : str or sizable handle
         You can use any markers in :module:matplotlib.markers
     handler_kw : mapping
@@ -521,6 +522,7 @@ class SizeLegend(ListLegend):
                  fmt=None,  # label
                  func=lambda x: x,  # label
                  show_at=None,
+                 spacing="percentile",
                  handle="circle",
                  handler_kw=None,
                  fill=True,
@@ -555,9 +557,17 @@ class SizeLegend(ListLegend):
         if show_at is None:
             show_at = np.array([.25, .5, .75, 1.])
         show_at = np.asarray(show_at)
-        ix = np.clip((show_at * len(sizes) - 1), 0, len(sizes) - 1).astype(int)
-        handle_sizes = sizes[ix]
-        handle_labels = array[ix]
+        if spacing == "percentile":
+            ix = np.clip((show_at * len(sizes) - 1), 0, len(sizes) - 1).astype(int)
+            handle_sizes = sizes[ix]
+            handle_labels = array[ix]
+        else:
+            amin = np.amin(array)
+            amax = np.amax(array)
+            smin = np.amin(sizes)
+            smax = np.amax(sizes)
+            handle_sizes = np.interp(show_at, [0, 1], [smin, smax])
+            handle_labels = np.interp(show_at, [0, 1], [amin, amax])
         handle_labels = func(handle_labels)
 
         num_entry = len(handle_labels)

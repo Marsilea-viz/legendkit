@@ -18,7 +18,7 @@ def test_normal_legend():
     legend(ax)
 
 
-items = ["rect", "square", "circle", "boxplot", "triangle", "octagon",
+items = ["rect", "square", "circle", "boxplot", "triangle", "octagon", "line",
          "octagon", "pentagon", "star", "hexagon", "plus", "cross", "asterisk",
          "triangle-up", "triangle-down", "triangle-left", "triangle-right"] \
     + [Line2D([0], [0], marker="*")]

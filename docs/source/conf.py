@@ -3,7 +3,7 @@ from matplotlib import cycler
 project = 'legendkit'
 copyright = '2023, Mr-Milk'
 author = 'Mr-Milk'
-release = '0.3.0'
+release = '0.3.2'
 
 extensions = [
     'numpydoc',

@@ -326,14 +326,20 @@ class ListLegend(Legend):
             marker = handle
         config.setdefault("markersize", self._fontsize * handle_size)
         config.setdefault("color", "C0")
-        config.update({"ls": ""})
+
         # handle parameters
+        ls = config.pop("ls", config.pop("linestyle", ""))
+        lw = config.pop("lw", config.pop("linewidth", 0))
+        config.setdefault("ls", ls)
+        config.setdefault("lw", lw)
+
         fc = config.pop("fc", config.pop("facecolor", None))
         ec = config.pop("ec", config.pop("edgecolor", None))
-        lw = config.pop("lw", config.pop("linewidth", None))
+        ew = config.pop("ew", config.pop("edgewidth", None))
         config.setdefault("mfc", fc)
         config.setdefault("mec", ec)
-        config.setdefault("mew", lw)
+        config.setdefault("mew", ew)
+
         return Line2D([0], [0], marker=marker, **config)
 
     def set_title_loc(self, loc):
@@ -384,7 +390,7 @@ class CatLegend(ListLegend):
     labels : array-like
         The text for each legend item
     handle : str or handle object, default: 'rect'
-        The handle to be used for every entry
+        The handle to be used for every entry, see :class:`legendkit.legend`
     handler_kw : mapping
         Use this to control the style of handler
     fill : bool, default: True
@@ -429,10 +435,8 @@ class CatLegend(ListLegend):
 
         legend_items = []
         for c, name in zip(colors, labels):
-            if fill:
-                options = {'fc': c, 'ec': c, **handler_kw}
-            else:
-                options = {'ec': c, 'fc': 'none', **handler_kw}
+            options = self._get_default_handle_option(handle, fill, c)
+            options.update(handler_kw)
             legend_items.append((handle, name, options))
 
         options = dict(
@@ -448,6 +452,15 @@ class CatLegend(ListLegend):
 
         super().__init__(legend_items=legend_items,
                          **options)
+
+    @staticmethod
+    def _get_default_handle_option(handle, fill, color):
+        if handle == "line":
+            return {"color": color}
+        else:
+            if fill:
+                return {'fc': color, 'ec': color}
+            return {'fc': 'none', 'ec': color,}
 
 
 # Modified from mpl.collections.PathCollection.legend_elements

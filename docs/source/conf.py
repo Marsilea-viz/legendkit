@@ -22,11 +22,11 @@ autosummary_generate = True
 autoclass_content = "class"
 numpydoc_show_class_members = False
 
-# setting plot direction
+# setting plot directive
 plot_include_source = True
 plot_html_show_source_link = False
 plot_html_show_formats = False
-plot_formats = ['svg']
+plot_formats = [('png', 200)]
 plot_rcparams = {'savefig.bbox': 'tight',
                  'font.family': 'Lato',
                  'xtick.color': '.15',
@@ -44,8 +44,8 @@ plot_rcparams = {'savefig.bbox': 'tight',
                  'xtick.minor.size': 0,
                  'ytick.minor.size': 0,
                  'axes.prop_cycle': cycler('color',
-                                           ['5A5B9F', 'D94F70', '009473',
-                                            'F0C05A', '7BC4C4', 'FF6F61']),
+                                           ['#5A5B9F', '#D94F70', '#009473',
+                                            '#F0C05A', '#7BC4C4', '#FF6F61']),
                  'legend.borderpad': 0.,
                  'legend.labelspacing': 0.5,
                  'legend.handlelength': 1.0,

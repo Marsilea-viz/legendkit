@@ -1,4 +1,4 @@
-from matplotlib import cycler
+from cycler import cycler
 
 project = 'legendkit'
 copyright = '2024, Mr-Milk'

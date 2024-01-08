@@ -1,6 +1,5 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from matplotlib import cycler
 from matplotlib.colors import Normalize
 
 from legendkit import legend, cat_legend, colorbar, colorart, hstack, vstack

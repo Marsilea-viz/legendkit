@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
-from legendkit import legend, SquareItem, CircleItem, RectItem
-from legendkit.handles import LineItem
+from legendkit import legend
+from legendkit.handles import LineItem, SquareItem, CircleItem, RectItem
 
 plt.style.use('https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pacoty.mplstyle')
 

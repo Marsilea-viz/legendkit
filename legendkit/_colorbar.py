@@ -141,7 +141,7 @@ class Colorbar(MPLColorbar):
 
         if title is not None:
             if title_fontproperties is None:
-                title_fontproperties = {'weight': 600, 'size': 'medium'}
+                title_fontproperties = {'weight': 'bold', 'size': 'medium'}
             self.ax.set_title(title, loc=alignment,
                               fontdict=title_fontproperties)
         self.ax.set_facecolor('none')

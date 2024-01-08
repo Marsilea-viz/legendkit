@@ -1,9 +1,9 @@
 from matplotlib import cycler
 
 project = 'legendkit'
-copyright = '2023, Mr-Milk'
+copyright = '2024, Mr-Milk'
 author = 'Mr-Milk'
-release = '0.3.2'
+release = '0.3.3'
 
 extensions = [
     'numpydoc',

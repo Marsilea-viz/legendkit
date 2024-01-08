@@ -386,7 +386,7 @@ class ColorArt(Artist):
 
         if self.title is not None:
             if self.title_fontproperties is None:
-                textprops = dict(fontweight=600, fontsize=self.title_fontsize)
+                textprops = dict(fontweight='bold', fontsize=self.title_fontsize)
             else:
                 textprops = dict(fontproperties=self.title_fontproperties)
             title_canvas = TextArea(self.title, textprops=textprops)

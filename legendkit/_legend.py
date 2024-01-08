@@ -279,7 +279,7 @@ class ListLegend(Legend):
             bbox_to_anchor=bbox_to_anchor,
             bbox_transform=bbox_transform,
             # Make the title bold if user supply no style
-            title_fontproperties={'weight': 600},
+            title_fontproperties={'weight': 'bold'},
             handler_map=handler_map,
             fontsize=self._fontsize,
             handleheight=self.handleheight,

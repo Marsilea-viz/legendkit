@@ -123,7 +123,7 @@ def stack(legends,
                            )
     if title is not None:
         if title_fontproperties is None:
-            title_fontproperties = {'weight': 600}
+            title_fontproperties = {'weight': 'bold'}
         title_box = TextArea(title, textprops=title_fontproperties)
 
         content = [title_box, children_pack]

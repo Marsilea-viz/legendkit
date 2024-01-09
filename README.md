@@ -8,7 +8,7 @@
 When you want to create or adjust the legend in matplotlib, things can get dirty. 
 Legendkit may solve your headache.
 
-<img src="https://legendkit.readthedocs.io/en/latest/_images/cover.svg">
+<img src="https://legendkit.readthedocs.io/en/latest/_images/cover.png">
 
 ## Features
 

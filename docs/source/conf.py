@@ -1,9 +1,10 @@
 from cycler import cycler
+import legendkit
 
 project = 'legendkit'
 copyright = '2024, Mr-Milk'
 author = 'Mr-Milk'
-release = '0.3.3'
+release = legendkit.__version__
 
 extensions = [
     'numpydoc',

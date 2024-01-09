@@ -1,3 +1,7 @@
+"""Legend creation and manipulation with ease for matplotlib"""
+
+__version__ = "0.3.3"
+
 from ._colorbar import Colorbar
 from ._colorart import ColorArt
 from ._legend import ListLegend, CatLegend, SizeLegend

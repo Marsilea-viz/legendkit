@@ -1,11 +1,17 @@
-[tool.poetry]
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
 name = "legendkit"
-version = "0.3.3"
-description = "Legend creation and manipulation with ease for matplotlib"
-authors = ["Mr-Milk <yb97643@um.edu.mo>"]
-license = "MIT"
+dynamic = ["version", "description"]
+requires-python = ">=3.8"
+authors = [
+      {name = "Mr-Milk", email = "yzheng@cemm.at", role = "maintainer"},
+]
+license = {file = "LICENSE"}
 readme = "README.md"
-repository = "https://github.com/Heatgraphy/legendkit"
+urls = {Home = "https://github.com/Marsilea-viz/legendkit"}
 classifiers = [
       "License :: OSI Approved :: MIT License",
       "Programming Language :: Python :: 3",
@@ -14,19 +20,19 @@ classifiers = [
       "Intended Audience :: Developers",
       "Topic :: Scientific/Engineering :: Visualization"
 ]
+dependencies = [
+      "matplotlib"
+]
 
-
-[tool.poetry.dependencies]
-python = ["^3.8"]
-matplotlib = "^3.6"
-
-[tool.poetry.group.dev.dependencies]
-Sphinx = "^6.0.0"
-sphinx-gallery = "^0.11.1"
-furo = "^2022.6.21"
-pytest = "^7.1.2"
-numpydoc = "^1.4.0"
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "icecream",
+    "python-hmr",
+    "pytest",
+    "scikit-learn",
+    "sphinx",
+    "numpydoc",
+    "sphinx_gallery",
+    "furo",
+]

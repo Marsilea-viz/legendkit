@@ -1,3 +1,6 @@
+from matplotlib.axes import Axes
+
+
 def add_x(x, y, offset):
     return x + offset, y
 
@@ -12,6 +15,10 @@ def minus_x(x, y, offset):
 
 def minus_y(x, y, offset):
     return x, y - offset
+
+
+def blank(x, y, offset):
+    return x, y
 
 
 class Locs:
@@ -31,6 +38,11 @@ class Locs:
         'out right upper': ('upper left', (1, 1), add_x),
         'out right center': ('center left', (1, 0.5), add_x),
         'out right lower': ('lower left', (1, 0), add_x),
+
+        'lower left': ('lower left', (0, 0), blank),
+
+        'center left': ('center left', (0, 0.5), blank),
+        'center right': ('center right', (1, 0.5), blank),
     }
 
     LOC_OPTIONS = [
@@ -60,7 +72,10 @@ class Locs:
             loc = replacement[0]
             bbox = replacement[1]
             offset_func = replacement[2]
-            bbox = offset_func(*bbox, deviation)
-            return loc, bbox, ax.transAxes
-        else:
-            return loc, bbox_to_anchor, bbox_transform
+            bbox_to_anchor = offset_func(*bbox, deviation)
+            if isinstance(ax, Axes):
+                bbox_transform = ax.transAxes
+            else:
+                fig = ax.get_figure()
+                bbox_transform = fig.transSubfigure
+        return loc, bbox_to_anchor, bbox_transform

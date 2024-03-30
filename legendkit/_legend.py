@@ -4,14 +4,16 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import _api
-from matplotlib.collections import Collection
-from matplotlib.colors import is_color_like
+from matplotlib.axes import Axes
+from matplotlib.collections import Collection, PatchCollection
+from matplotlib.colors import is_color_like, Normalize
+from matplotlib.figure import FigureBase
 from matplotlib.font_manager import FontProperties
 from matplotlib.legend import Legend
 from matplotlib.lines import Line2D
 from matplotlib.markers import MarkerStyle
 from matplotlib.offsetbox import VPacker, HPacker
-from matplotlib.patches import Patch
+from matplotlib.patches import Patch, Rectangle
 
 from ._handlers import CircleHandler, RectHandler, BoxplotHanlder
 from ._locs import Locs
@@ -112,7 +114,7 @@ class ListLegend(Legend):
 
     Parameters
     ----------
-    ax : :class:`Axes <matplotlib.axes.Axes>`
+    ax : :class:`Axes <matplotlib.axes.Axes>` or :class:`Figure <matplotlib.figure.FigureBase>`
         The axes to draw the legend
     legend_items : array-like of (handle, label, styles)
         See examples
@@ -183,7 +185,7 @@ class ListLegend(Legend):
         return "<ListLegend>"
 
     def __init__(self,
-                 ax=None,
+                 ax: Axes | FigureBase = None,
                  legend_items=None,
                  handles=None,
                  labels=None,
@@ -206,9 +208,16 @@ class ListLegend(Legend):
 
         _api.check_in_list(["top", "bottom", "left", "right"],
                            title_loc=title_loc)
-        self._has_axes = ax is not None
+        self._has_parent = ax is not None
+        self._is_axes = isinstance(ax, Axes)
         if ax is None:
-            ax = plt.gca()
+            axes = plt.gca()
+        else:
+            if not self._is_axes:
+                fig = ax
+                axes = fig.get_axes()
+            else:
+                axes = [ax]
         self._title_loc = title_loc
         self.titlepad = titlepad
         self._is_patch = False
@@ -237,9 +246,13 @@ class ListLegend(Legend):
         legend_labels = []
 
         if (legend_items is None) & (handles is None) & (labels is None):
-            # If only axes is provided, we will try to get
-            legend_handles, legend_labels = \
-                ax.get_legend_handles_labels(handler_map)
+            legend_handles = []
+            legend_labels = []
+            for handle in _get_legend_handles(axes, handler_map):
+                label = handle.get_label()
+                if label and not label.startswith('_'):
+                    legend_handles.append(handle)
+                    legend_labels.append(label)
         elif legend_items is not None:
             for item in legend_items:
                 if len(item) == 2:
@@ -262,7 +275,10 @@ class ListLegend(Legend):
             legend_handles, legend_labels = handles, labels
 
         if loc is None:
-            loc = "best"
+            if self._is_axes:
+                loc = "best"
+            else:
+                loc = "center right"
         else:
             loc, bbox_to_anchor, bbox_transform = \
                 Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
@@ -301,10 +317,13 @@ class ListLegend(Legend):
             # Attach as legend element
             # 1. ax.get_legend() will work
             # 2. legend won't be clipped
-            if ax.legend_ is None:
-                ax.legend_ = self
+            if isinstance(ax, Axes):
+                if ax.legend_ is None:
+                    ax.legend_ = self
+                else:
+                    ax.add_artist(self)
             else:
-                ax.add_artist(self)
+                ax.legends.append(self)
 
     def _parse_handler(self, handle, handle_size, config=None):
         if not isinstance(handle, str):
@@ -460,7 +479,7 @@ class CatLegend(ListLegend):
         else:
             if fill:
                 return {'fc': color, 'ec': color}
-            return {'fc': 'none', 'ec': color,}
+            return {'fc': 'none', 'ec': color, }
 
 
 # Modified from mpl.collections.PathCollection.legend_elements

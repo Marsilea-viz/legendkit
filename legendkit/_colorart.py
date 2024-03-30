@@ -153,11 +153,17 @@ class ColorArt(Artist):
                  rasterized=True,
 
                  ):
+        super().__init__()
         if ax is None:
             ax = plt.gca()
-        self.ax = ax
+        self.is_axes = True
+        if not isinstance(ax, Axes):
+            self.is_axes = False
+            self.set_figure(ax)
 
-        super().__init__()
+        else:
+            self.set_figure(ax.figure)
+            self.axes = ax
         if rasterized:
             # Force rasterization
             self._rasterized = True
@@ -265,6 +271,7 @@ class ColorArt(Artist):
             Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
                              bbox_transform=bbox_transform,
                              deviation=deviation)
+        print(self._bbox_to_anchor)
 
         self.textpad = mpl.rcParams[
             'legend.handletextpad'] if textpad is None else textpad
@@ -314,6 +321,7 @@ class ColorArt(Artist):
         # Add cbar
         canvas = DrawingArea(da_width, da_height, clip=False)
         # self._add_color_patches(self._cbar_canvas)
+        canvas.set_figure(self.figure)
 
         cmap_caller = get_colormap(self.cmap)
         colors_list = cmap_caller(np.arange(cmap_caller.N))
@@ -397,7 +405,7 @@ class ColorArt(Artist):
                                  children=[title_canvas, canvas],
                                  align=self.alignment
                                  )
-            title_pack.axes = self.ax
+            title_pack.set_figure(self.figure)
             final_pack = title_pack
         else:
             final_pack = canvas
@@ -408,17 +416,23 @@ class ColorArt(Artist):
             bbox_transform=self._bbox_transform,
             bbox_to_anchor=self._bbox_to_anchor,
             frameon=False)
-        self.ax.add_artist(self._cbar_box)
+        self._cbar_box.set_figure(self.figure)
+        if self.is_axes:
+            self.axes.add_artist(self._cbar_box)
+        else:
+            self.figure.add_artist(self._cbar_box)
 
     def _get_text_size(self, ticklabels):
         """Used to get the proper size for drawing area"""
-        fig = self.ax.get_figure()
-        renderer = fig.canvas.get_renderer()
+        renderer = self.figure.canvas.get_renderer()
         all_texts = []
         for t in ticklabels:
             text_obj = Text(0, 0, t, fontsize=self._fontsize,
                             fontproperties=self.prop)
-            self.ax.add_artist(text_obj)
+            if self.is_axes:
+                self.axes.add_artist(text_obj)
+            else:
+                self.figure.add_artist(text_obj)
             all_texts.append(text_obj)
         x_sizes, y_sizes = [], []
         for t in all_texts:

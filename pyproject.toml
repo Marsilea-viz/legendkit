@@ -35,4 +35,5 @@ dev = [
     "numpydoc",
     "sphinx_gallery",
     "furo",
+    "mpl_fontkit"
 ]

@@ -5,15 +5,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import _api
 from matplotlib.axes import Axes
-from matplotlib.collections import Collection, PatchCollection
-from matplotlib.colors import is_color_like, Normalize
+from matplotlib.collections import Collection
+from matplotlib.colors import is_color_like
 from matplotlib.figure import FigureBase
 from matplotlib.font_manager import FontProperties
 from matplotlib.legend import Legend
 from matplotlib.lines import Line2D
 from matplotlib.markers import MarkerStyle
 from matplotlib.offsetbox import VPacker, HPacker
-from matplotlib.patches import Patch, Rectangle
+from matplotlib.patches import Patch
 
 from ._handlers import CircleHandler, RectHandler, BoxplotHanlder
 from ._locs import Locs
@@ -210,14 +210,20 @@ class ListLegend(Legend):
                            title_loc=title_loc)
         self._has_parent = ax is not None
         self._is_axes = isinstance(ax, Axes)
+        parent = None
         if ax is None:
-            axes = plt.gca()
+            parent = plt.gca()
+            axes = [parent]
+            self._is_axes = True
         else:
             if not self._is_axes:
                 fig = ax
                 axes = fig.get_axes()
+                parent = fig
             else:
                 axes = [ax]
+                parent = ax
+
         self._title_loc = title_loc
         self.titlepad = titlepad
         self._is_patch = False
@@ -281,7 +287,7 @@ class ListLegend(Legend):
                 loc = "center right"
         else:
             loc, bbox_to_anchor, bbox_transform = \
-                Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
+                Locs().transform(parent, loc, bbox_to_anchor=bbox_to_anchor,
                                  bbox_transform=bbox_transform,
                                  deviation=deviation)
         if handler_map is None:
@@ -304,7 +310,7 @@ class ListLegend(Legend):
         )
 
         final_options = {**default_kwargs, **kwargs}
-        super().__init__(ax,
+        super().__init__(parent,
                          handles=legend_handles,
                          labels=legend_labels,
                          **final_options)
@@ -317,13 +323,14 @@ class ListLegend(Legend):
             # Attach as legend element
             # 1. ax.get_legend() will work
             # 2. legend won't be clipped
-            if isinstance(ax, Axes):
+            if self._is_axes:
+                ax = axes[0]
                 if ax.legend_ is None:
                     ax.legend_ = self
                 else:
                     ax.add_artist(self)
             else:
-                ax.legends.append(self)
+                fig.legends.append(self)
 
     def _parse_handler(self, handle, handle_size, config=None):
         if not isinstance(handle, str):
@@ -386,7 +393,7 @@ class ListLegend(Legend):
         self._legend_box = packer(pad=pad, sep=sep,
                                   align=alignment, children=children)
 
-        self._legend_box.set_figure(self.figure)
+        self._legend_box.figure = self.figure
         self._legend_box.axes = self.axes
 
         # call this to maintain consistent behavior as legend

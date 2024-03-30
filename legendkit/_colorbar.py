@@ -205,4 +205,4 @@ class Colorbar(MPLColorbar):
         xlims = np.sort(self.ax.get_xlim())
         ylims = np.sort(self.ax.get_ylim())
         return (xlims[0], ylims[0]), (xlims[0], ylims[1]), \
-               (xlims[1], ylims[1]), (xlims[1], ylims[0])
+            (xlims[1], ylims[1]), (xlims[1], ylims[0])

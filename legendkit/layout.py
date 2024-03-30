@@ -1,5 +1,5 @@
 from functools import partial
-from typing import List, Optional, Dict
+from typing import List, Dict
 
 from matplotlib.artist import Artist
 from matplotlib.legend import Legend

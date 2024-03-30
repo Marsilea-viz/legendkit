@@ -159,10 +159,10 @@ class ColorArt(Artist):
         self.is_axes = True
         if not isinstance(ax, Axes):
             self.is_axes = False
-            self.set_figure(ax)
+            self.figure = ax
 
         else:
-            self.set_figure(ax.figure)
+            self.figure = ax.figure
             self.axes = ax
         if rasterized:
             # Force rasterization
@@ -271,7 +271,6 @@ class ColorArt(Artist):
             Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
                              bbox_transform=bbox_transform,
                              deviation=deviation)
-        print(self._bbox_to_anchor)
 
         self.textpad = mpl.rcParams[
             'legend.handletextpad'] if textpad is None else textpad
@@ -281,6 +280,7 @@ class ColorArt(Artist):
             'legend.borderaxespad'] if borderaxespad is None else borderaxespad
 
         # the container for title, colorbar, ticks and tick labels
+        self._final_pack = None
         self._cbar_box = None
         self._process_values()
         self._get_locator_formatter()
@@ -321,7 +321,8 @@ class ColorArt(Artist):
         # Add cbar
         canvas = DrawingArea(da_width, da_height, clip=False)
         # self._add_color_patches(self._cbar_canvas)
-        canvas.set_figure(self.figure)
+        # canvas.set_figure(self.figure)
+        canvas.figure = self.figure
 
         cmap_caller = get_colormap(self.cmap)
         colors_list = cmap_caller(np.arange(cmap_caller.N))
@@ -334,10 +335,10 @@ class ColorArt(Artist):
             if self.orientation == "vertical":
                 for i, (y1, y2) in enumerate(zip(locs, locs[1::])):
                     rects.append(Rectangle((0, y1), width=self.width,
-                                           height=y2-y1, fc=colors_list[i]))
+                                           height=y2 - y1, fc=colors_list[i]))
             else:
                 for i, (x1, x2) in enumerate(zip(locs, locs[1::])):
-                    rects.append(Rectangle((x1, 0), width=x2-x1,
+                    rects.append(Rectangle((x1, 0), width=x2 - x1,
                                            height=self.height,
                                            fc=colors_list[i]))
         else:
@@ -405,10 +406,12 @@ class ColorArt(Artist):
                                  children=[title_canvas, canvas],
                                  align=self.alignment
                                  )
-            title_pack.set_figure(self.figure)
+            # title_pack.set_figure(self.figure)
+            title_pack.figure = self.figure
             final_pack = title_pack
         else:
             final_pack = canvas
+        self._final_pack = final_pack
         self._cbar_box = AnchoredOffsetbox(
             self._loc, child=final_pack,
             pad=self.borderpad,
@@ -416,11 +419,21 @@ class ColorArt(Artist):
             bbox_transform=self._bbox_transform,
             bbox_to_anchor=self._bbox_to_anchor,
             frameon=False)
-        self._cbar_box.set_figure(self.figure)
+        # self._cbar_box.set_figure(self.figure)
+        self._cbar_box.figure = self.figure
         if self.is_axes:
             self.axes.add_artist(self._cbar_box)
         else:
             self.figure.add_artist(self._cbar_box)
+
+    def get_bbox(self, renderer=None):
+        return self._final_pack.get_bbox(renderer=renderer)
+
+    def get_window_extent(self, renderer=None):
+        return self._final_pack.get_window_extent(renderer=renderer)
+
+    def set_offset(self, offset):
+        self._final_pack.set_offset(offset)
 
     def _get_text_size(self, ticklabels):
         """Used to get the proper size for drawing area"""

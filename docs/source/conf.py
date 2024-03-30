@@ -55,6 +55,7 @@ plot_rcparams = {'savefig.bbox': 'tight',
                  'legend.borderaxespad': 0.5,
                  'legend.columnspacing': 1.0
                  }
+plot_apply_rcparams = True
 plot_pre_code = """
 import numpy as np
 from matplotlib import pyplot as plt

@@ -19,9 +19,9 @@ Examples
 """
 from abc import ABC
 
+from matplotlib.collections import Collection
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
-from matplotlib.collections import Collection
 
 
 class SquareItem(Patch, ABC):
@@ -48,6 +48,7 @@ class LineItem(Line2D, ABC):
 
 class BoxplotItem(Collection, ABC):
     """Create boxplot for legend handles"""
+
     def __init__(self, *args, **kwargs):
         user_ec = kwargs.get('ec')
         user_edgecolor = kwargs.get('edgecolor')

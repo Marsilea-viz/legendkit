@@ -1,8 +1,9 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.colors import Normalize
 
-from legendkit import legend, cat_legend, colorbar, colorart, hstack, vstack
+from legendkit import legend, cat_legend, colorbar, colorart, hstack, vstack, size_legend
 
 mpl.rcParams['legend.handleheight'] = 1
 mpl.rcParams['legend.handlelength'] = 1
@@ -83,9 +84,10 @@ args = dict(
     colors=["#A7D2CB", "#F2D388", "#A7D2CB", "#F2D388"],
     labels=["Item 1", "Item 2", "Item 3", "Item 4"],
 )
-legend = cat_legend(**args, title="Legend", handle="circle")
+legend1 = cat_legend(**args, title="Category", handle="circle")
+legend2 = size_legend(sizes=np.arange(1, 401), title="Size", handle="circle")
 cart = colorart(norm=norm, cmap="cool", ax=ax, title="Colorart")
-hstack([legend, cart], spacing=20, title="Stack colorbar and legend",
+hstack([legend1, legend2, cart], spacing=20, title="Stack colorbar and legend",
        alignment="left",
        loc="upper left", bbox_to_anchor=(1, 1), bbox_transform=ax.transAxes,
        frameon=True, ax=ax, padding=2)

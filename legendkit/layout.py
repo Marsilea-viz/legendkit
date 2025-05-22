@@ -36,7 +36,6 @@ def _create_children(artists: List[Artist]):
                 art.set_visible(False)
             except Exception:
                 pass
-            pass
     return children
 
 

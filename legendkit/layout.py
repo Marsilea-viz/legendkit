@@ -32,7 +32,10 @@ def _create_children(artists: List[Artist]):
             # remove artist from the canvas to avoid rendering overlay
             art.remove()
         except Exception:
-            pass
+            try:
+                art.set_visible(False)
+            except Exception:
+                pass
     return children
 
 

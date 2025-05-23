@@ -600,9 +600,9 @@ class ColorArt(Artist):
             eps = 1e-10
             b = b[(b <= intv[1] * (1 + eps)) & (b >= intv[0] * (1 - eps))]
             # b = b[(b >= intv[0] * (1 - eps))]
-        else:
-            eps = (intv[1] - intv[0]) * 1e-10
-            b = b[(b <= intv[1] + eps) & (b >= intv[0] - eps)]
+        # else:
+            # eps = (intv[1] - intv[0]) * 1e-10
+            # b = b[(b <= intv[1] + eps) & (b >= intv[0] - eps)]
         locs, ticks1, ticks2 = self._locate(b)
         ticklabels = formatter.format_ticks(b)
         offset_string = formatter.get_offset()

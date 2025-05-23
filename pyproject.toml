@@ -55,3 +55,4 @@ allow-direct-references = true
 
 [tool.taskipy.tasks]
 test = "pytest tests"
+doc = "sphinx-build -b html docs/source docs/build"

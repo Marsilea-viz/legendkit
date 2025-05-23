@@ -36,5 +36,31 @@ dev = [
     "taskipy>=1.14.1",
 ]
 
+[tool.hatch.version]
+path = "src/lazyslide/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "docs",
+    "examples",
+    "tests",
+    "scripts",
+    ".readthedocs.yaml",
+    ".github",
+    ".gitignore",
+]
+include = [
+    "README.md",
+    "LICENSE",
+    "pyproject.toml",
+    "legendkit",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["legendkit", "README.md", "LICENSE", "pyproject.toml"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.taskipy.tasks]
 test = "pytest tests"

@@ -37,18 +37,9 @@ dev = [
 ]
 
 [tool.hatch.version]
-path = "src/lazyslide/__init__.py"
+path = "legendkit/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-exclude = [
-    "docs",
-    "examples",
-    "tests",
-    "scripts",
-    ".readthedocs.yaml",
-    ".github",
-    ".gitignore",
-]
 include = [
     "README.md",
     "LICENSE",

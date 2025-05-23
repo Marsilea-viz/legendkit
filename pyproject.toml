@@ -36,5 +36,5 @@ dev = [
     "taskipy>=1.14.1",
 ]
 
-[tool.uv.tasks]
+[tool.taskipy.tasks]
 test = "pytest tests"

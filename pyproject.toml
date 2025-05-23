@@ -1,17 +1,18 @@
 [build-system]
-requires = ["flit_core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "legendkit"
-dynamic = ["version", "description"]
+dynamic = ["version"]
+description = "Legend creation and manipulation with ease for matplotlib"
 requires-python = ">=3.8"
 authors = [
       {name = "Mr-Milk", email = "yzheng@cemm.at"},
 ]
 license = {file = "LICENSE"}
 readme = "README.md"
-urls = {Home = "https://github.com/Marsilea-viz/legendkit"}
+repository = "https://github.com/Marsilea-viz/legendkit"
 classifiers = [
       "License :: OSI Approved :: MIT License",
       "Programming Language :: Python :: 3",
@@ -21,19 +22,19 @@ classifiers = [
       "Topic :: Scientific/Engineering :: Visualization"
 ]
 dependencies = [
-      "matplotlib"
+    "matplotlib"
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
-    "ruff",
-    "icecream",
-    "python-hmr",
-    "pytest",
-    "scikit-learn",
-    "sphinx",
-    "numpydoc",
-    "sphinx_gallery",
-    "furo",
-    "mpl_fontkit"
+    "furo>=2024.8.6",
+    "mpl-fontkit>=0.5.1",
+    "numpydoc>=1.7.0",
+    "pytest>=8.3.5",
+    "sphinx>=7.1.2",
+    "sphinx-gallery>=0.19.0",
+    "taskipy>=1.14.1",
 ]
+
+[tool.uv.tasks]
+test = "pytest tests"

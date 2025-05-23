@@ -129,10 +129,10 @@ class Colorbar(MPLColorbar):
 
         if style == "white":
             # Inward ticks and white color
-            self._long_axis() \
+            self.long_axis \
                 .set_tick_params(direction="in", color="white",
                                  width=1, size=5)
-            self._long_axis() \
+            self.long_axis \
                 .set_tick_params(which="minor",
                                  direction="in", color="white",
                                  )
@@ -148,7 +148,7 @@ class Colorbar(MPLColorbar):
         # shape clip not work for BoundaryNorm or CounterSet
         if self.solids is not None:
             if shape != "rect":
-                self._long_axis().set_tick_params(width=0)
+                self.long_axis.set_tick_params(width=0)
             if shape == "ellipse":
                 xrange = self.get_xrange()
                 yrange = self.get_yrange()

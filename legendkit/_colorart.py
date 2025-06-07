@@ -606,6 +606,24 @@ class ColorArt(Artist):
         locs, ticks1, ticks2 = self._locate(b)
         ticklabels = formatter.format_ticks(b)
         offset_string = formatter.get_offset()
+
+        # Filter out ticklabels for ticks that are outside the colorbox boundaries
+        h = self.height
+        if self.orientation == "horizontal":
+            h = self.width
+
+        # Create a mask for valid tick positions (within colorbox boundaries)
+        valid_indices = []
+        for i, loc in enumerate(locs):
+            if 0 <= loc <= h:
+                valid_indices.append(i)
+
+        # Filter locs and ticklabels to match the filtered ticks
+        if len(valid_indices) < len(locs):
+            locs = np.array([locs[i] for i in valid_indices])
+            ticklabels = [ticklabels[i] for i in valid_indices]
+            # ticks1 and ticks2 are already filtered in _locate()
+
         return locs, ticks1, ticks2, ticklabels, offset_string
 
     def _locate(self, v):
@@ -628,14 +646,16 @@ class ColorArt(Artist):
 
         ticks1, ticks2 = [], []
         for loc in locs:
-            if self.orientation == "vertical":
-                t1 = [(0, loc), (w * self.tick_size, loc)]
-                t2 = [(w, loc), (w * (1 - self.tick_size), loc)]
-            else:
-                t1 = [(loc, 0), (loc, w * self.tick_size)]
-                t2 = [(loc, w), (loc, w * (1 - self.tick_size))]
-            ticks1.append(t1)
-            ticks2.append(t2)
+            # Check if the tick is within the colorbox boundaries
+            if 0 <= loc <= h:
+                if self.orientation == "vertical":
+                    t1 = [(0, loc), (w * self.tick_size, loc)]
+                    t2 = [(w, loc), (w * (1 - self.tick_size), loc)]
+                else:
+                    t1 = [(loc, 0), (loc, w * self.tick_size)]
+                    t2 = [(loc, w), (loc, w * (1 - self.tick_size))]
+                ticks1.append(t1)
+                ticks2.append(t2)
 
         return locs, ticks1, ticks2
 

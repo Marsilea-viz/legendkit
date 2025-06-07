@@ -1,6 +1,6 @@
 """Legend creation and manipulation with ease for matplotlib"""
 
-__version__ = "0.3.5"
+__version__ = "0.3.6"
 
 from ._colorart import ColorArt
 from ._colorbar import Colorbar

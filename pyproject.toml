@@ -55,7 +55,7 @@ allow-direct-references = true
 source = "uv-dynamic-versioning"
 
 [tool.hatch.build.hooks.version]
-path = "src/lazyslide/_version.py"
+path = "legendkit/_version.py"
 template = '''
 version = "{version}"
 '''

@@ -13,4 +13,5 @@ API Reference
     colorart
     vstack
     hstack
+    stack
     handles

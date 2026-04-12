@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import matplotlib as mpl
 import matplotlib.transforms as mtransforms
+import matplotlib.path as mpath
 import numpy as np
 from matplotlib import _api, cm, contour, ticker, colors
 from matplotlib import pyplot as plt
@@ -9,10 +10,11 @@ from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.font_manager import FontProperties
-from matplotlib.offsetbox import DrawingArea, VPacker, TextArea, \
+from matplotlib.offsetbox import DrawingArea as MatplotlibDrawingArea, VPacker, TextArea, \
     AnchoredOffsetbox
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
+from matplotlib.backends.backend_mixed import MixedModeRenderer
 
 from ._locs import Locs
 
@@ -21,6 +23,53 @@ def get_colormap(cmap):
     if isinstance(cmap, colors.Colormap):
         return cmap
     return mpl.colormaps.get(cmap)
+
+
+class DrawingArea(MatplotlibDrawingArea):
+
+    def draw(self, renderer):
+
+        dpi_cor = renderer.points_to_pixels(1.)
+        self.dpi_transform.clear()
+        self.dpi_transform.scale(dpi_cor)
+
+        tpath = mtransforms.TransformedPath(
+            mpath.Path([[0, 0], [0, self.height],
+                        [self.width, self.height],
+                        [self.width, 0]]),
+            self.get_transform())
+        for c in self._children:
+            if self._clip_children and not (c.clipbox or c._clippath):
+                c.set_clip_path(tpath)
+            if c.get_rasterized() and isinstance(renderer, MixedModeRenderer):
+                # When using MixedModeRenderer (PDF/SVG/PS), the figure DPI is
+                # set to the vector renderer's DPI (typically 72 pt/inch), so
+                # dpi_cor ≈ 1.0. But rasterized children are drawn into a
+                # RendererAgg buffer at renderer.dpi (the user's requested DPI).
+                # Both dpi_transform and offset_transform must be scaled by
+                # mag = dpi/figdpi so geometry lands at correct raster pixels.
+                # stop_rasterizing() will divide back by mag when placing the
+                # image. We round the scaled translation to integer pixels to
+                # avoid sub-pixel drift caused by floating-point rounding of
+                # the crop slice indices in stop_rasterizing().
+                mag = renderer.dpi / renderer._figdpi
+                raster_dpi_cor = dpi_cor * mag
+                self.dpi_transform.clear()
+                self.dpi_transform.scale(raster_dpi_cor)
+
+                off_mat = self.offset_transform.get_matrix().copy()
+                scaled_off = off_mat.copy()
+                off_mat[:2, 2] *= mag
+                self.offset_transform.set_matrix(scaled_off)
+                c.draw(renderer)
+                self.dpi_transform.clear()
+                self.dpi_transform.scale(dpi_cor)
+                self.offset_transform.set_matrix(off_mat)
+            else:
+                c.draw(renderer)
+
+        # _bbox_artist(self, renderer, fill=False, props=dict(pad=0.))
+        self.stale = False
 
 
 class ColorArt(Artist):
@@ -44,7 +93,8 @@ class ColorArt(Artist):
     values :
     boundaries :
     flip : bool
-        Flip the
+        Flip the colorart so the colormap is reversed visually
+        (low values at top for vertical, right for horizontal).
     orientation : {'vertical', 'horizontal'}
         The orientation of colorart.
     ticks : list of ticks or Locator
@@ -342,21 +392,27 @@ class ColorArt(Artist):
                                            height=self.height,
                                            fc=colors_list[i]))
         else:
-            x, y = 0, 0
-            for c in colors_list:
+            n = len(colors_list)
+            for i, c in enumerate(colors_list):
                 if self.orientation == "vertical":
-                    dy = self.height / len(colors_list)
-                    rh, rw = dy, self.width
-                    y += dy
+                    # compute y0/y1 from index to avoid fp accumulation drift
+                    y0 = self.height * i / n
+                    y1 = self.height * (i + 1) / n
+                    rects.append(Rectangle((0, y0), width=self.width,
+                                           height=y1 - y0,
+                                           fc=c, antialiased=False,
+                                           alpha=self.alpha))
                 else:
-                    dx = self.width / len(colors_list)
-                    rh, rw = self.height, dx
-                    x += dx
-                rects.append(Rectangle((x, y), width=rw, height=rh,
-                                       fc=c, antialiased=False,
-                                       alpha=self.alpha))
+                    x0 = self.width * i / n
+                    x1 = self.width * (i + 1) / n
+                    rects.append(Rectangle((x0, 0), width=x1 - x0,
+                                           height=self.height,
+                                           fc=c, antialiased=False,
+                                           alpha=self.alpha))
 
         patches = PatchCollection(rects, match_original=True)
+        if self._rasterized:
+            patches.set_rasterized(True)
         canvas.add_artist(patches)
 
         # Add ticks
@@ -679,5 +735,8 @@ class ColorArt(Artist):
         self._cbar_box.remove()
 
     def set_border(self, *args):
-        # TODO: allow user to draw border on the colorbar
-        pass
+        raise NotImplementedError(
+            "set_border() is not yet implemented. "
+            "To draw a border around the colorart, add a Rectangle patch "
+            "manually to the axes."
+        )

@@ -40,8 +40,15 @@ class Locs:
         'out right lower': ('lower left', (1, 0), add_x),
 
         'lower left': ('lower left', (0, 0), blank),
+        'lower center': ('lower center', (0.5, 0), blank),
+        'lower right': ('lower right', (1, 0), blank),
+
+        'upper left': ('upper left', (0, 1), blank),
+        'upper center': ('upper center', (0.5, 1), blank),
+        'upper right': ('upper right', (1, 1), blank),
 
         'center left': ('center left', (0, 0.5), blank),
+        'center': ('center', (0.5, 0.5), blank),
         'center right': ('center right', (1, 0.5), blank),
     }
 
@@ -65,7 +72,18 @@ class Locs:
         if loc is None:
             loc = "upper right"
         if loc not in self.LOC_OPTIONS:
-            msg = f"`loc` must be one of {', '.join(self.LOC_OPTIONS)}"
+            inside = ['lower left', 'lower center', 'lower right',
+                      'upper left', 'upper center', 'upper right',
+                      'center left', 'center', 'center right']
+            outside = ['out upper left', 'out upper center', 'out upper right',
+                       'out lower left', 'out lower center', 'out lower right',
+                       'out left upper', 'out left center', 'out left lower',
+                       'out right upper', 'out right center', 'out right lower']
+            msg = (
+                f"Invalid loc {loc!r}. Choose from:\n"
+                f"  Inside axes:  {', '.join(inside)}\n"
+                f"  Outside axes: {', '.join(outside)}"
+            )
             raise ValueError(msg)
         replacement = self.combs.get(loc)
         if replacement is not None:

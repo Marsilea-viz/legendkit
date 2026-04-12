@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "uv-dynamic-versioning"]
 build-backend = "hatchling.build"
 
 [project]
@@ -28,6 +28,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "furo>=2024.8.6",
+    "ipykernel>=6.29.5",
     "mpl-fontkit>=0.5.1",
     "numpydoc>=1.7.0",
     "pytest>=8.3.5",
@@ -35,9 +36,6 @@ dev = [
     "sphinx-gallery>=0.19.0",
     "taskipy>=1.14.1",
 ]
-
-[tool.hatch.version]
-path = "legendkit/__init__.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -52,6 +50,15 @@ packages = ["legendkit", "README.md", "LICENSE", "pyproject.toml"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.hatch.version]
+source = "uv-dynamic-versioning"
+
+[tool.hatch.build.hooks.version]
+path = "src/lazyslide/_version.py"
+template = '''
+version = "{version}"
+'''
 
 [tool.taskipy.tasks]
 test = "pytest tests"

@@ -57,7 +57,7 @@ class CircleHandler(HandlerPatch):
                       radius=s / 2)
 
 
-class BoxplotHanlder(HandlerPatch):
+class BoxplotHandler(HandlerPatch):
     box_w = 0.8
     box_h = 0.6
 
@@ -81,3 +81,7 @@ class BoxplotHanlder(HandlerPatch):
                           height=linewidth / 2)
 
         return PatchCollection([vline, box, hline], match_original=True)
+
+
+# Backward-compat alias for the old typo name
+BoxplotHanlder = BoxplotHandler

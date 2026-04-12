@@ -96,12 +96,12 @@ class Colorbar(MPLColorbar):
         if loc is None:
             loc = "out right center"
 
-        if (width is None) & (height is None):
+        if (width is None) and (height is None):
             width, height = (0.3, 1.5)
             # Flip width and height
             if orientation == 'horizontal':
                 width, height = height, width
-        elif (width is not None) & (height is not None):
+        elif (width is not None) and (height is not None):
             pass
         else:
             if width is None:

@@ -15,7 +15,7 @@ from matplotlib.markers import MarkerStyle
 from matplotlib.offsetbox import VPacker, HPacker
 from matplotlib.patches import Patch
 
-from ._handlers import CircleHandler, RectHandler, BoxplotHanlder
+from ._handlers import CircleHandler, RectHandler, BoxplotHandler
 from ._locs import Locs
 from .handles import RectItem, CircleItem, LineItem, BoxplotItem
 
@@ -45,10 +45,6 @@ _handle_marker = {
     "cross": "X",
     "asterisk": (6, 2, 0)
 }
-
-
-def _parse_marker(m):
-    pass
 
 
 def _get_legend_handles(axs, legend_handler_map=None):
@@ -294,7 +290,7 @@ class ListLegend(Legend):
             handler_map = {}
         handler_map.update({RectItem: RectHandler(),
                             CircleItem: CircleHandler(),
-                            BoxplotItem: BoxplotHanlder(),
+                            BoxplotItem: BoxplotHandler(),
                             })
         default_kwargs = dict(
             loc=loc,
@@ -458,6 +454,11 @@ class CatLegend(ListLegend):
             handle = 'square'
         if handler_kw is None:
             handler_kw = {}
+        if len(colors) != len(labels):
+            raise ValueError(
+                f"colors and labels must have the same length, "
+                f"got {len(colors)} colors and {len(labels)} labels."
+            )
 
         legend_items = []
         for c, name in zip(colors, labels):
@@ -596,6 +597,11 @@ class SizeLegend(ListLegend):
         if show_at is None:
             show_at = np.array([.25, .5, .75, 1.])
         show_at = np.asarray(show_at)
+        if np.any(show_at < 0) or np.any(show_at > 1):
+            raise ValueError(
+                "show_at values must be between 0 and 1 (percentiles), "
+                f"got {show_at}."
+            )
         if spacing == "percentile":
             ix = np.clip((show_at * len(sizes) - 1), 0, len(sizes) - 1).astype(int)
             handle_sizes = sizes[ix]

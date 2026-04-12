@@ -44,7 +44,8 @@ class ColorArt(Artist):
     values :
     boundaries :
     flip : bool
-        Flip the
+        Flip the colorart so the colormap is reversed visually
+        (low values at top for vertical, right for horizontal).
     orientation : {'vertical', 'horizontal'}
         The orientation of colorart.
     ticks : list of ticks or Locator
@@ -679,5 +680,8 @@ class ColorArt(Artist):
         self._cbar_box.remove()
 
     def set_border(self, *args):
-        # TODO: allow user to draw border on the colorbar
-        pass
+        raise NotImplementedError(
+            "set_border() is not yet implemented. "
+            "To draw a border around the colorart, add a Rectangle patch "
+            "manually to the axes."
+        )

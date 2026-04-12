@@ -510,10 +510,18 @@ class SizeLegend(ListLegend):
         The color of the entry
     fmt : str, :class:`Formatter <matplotlib.ticker.Formatter>`
         The format or formatter to use for the labels.
+        When not set, whole-number floats (e.g. ``10.0``) are displayed
+        without the decimal (e.g. ``10``). Pass ``"{x:.1f}"`` to force
+        decimal display.
     func : Callable, default: `lambda x: x`
         A function to calculate the labels.
-    show_at : array-like, default: [.25, .5, .75, 1.]
-        The percentile to show the sizes
+    num_handle : int, default: 4
+        Number of legend entries to show when ``show_at`` is not specified.
+        Ignored when ``show_at`` is provided explicitly.
+    show_at : array-like, optional
+        Explicit percentiles (values in ``[0, 1]``) at which to show entries.
+        When omitted, nice round values are chosen automatically from the
+        data range using ``num_legend`` as a hint.
     spacing : {"percentile", "uniform"}, default: "percentile"
         The spacing of the sizes
     handle : str or sizable handle
@@ -561,6 +569,7 @@ class SizeLegend(ListLegend):
                  colors=None,
                  fmt=None,  # label
                  func=lambda x: x,  # label
+                 num_handle=4,
                  show_at=None,
                  spacing="percentile",
                  handle="circle",
@@ -581,6 +590,7 @@ class SizeLegend(ListLegend):
         sizes = sizes[sort_ix]
         array = array[sort_ix]
 
+        _auto_fmt = fmt is None
         if fmt is None:
             fmt = mpl.ticker.ScalarFormatter(useOffset=False, useMathText=True)
         elif isinstance(fmt, str):
@@ -593,27 +603,39 @@ class SizeLegend(ListLegend):
         fmt.axis.set_view_interval(display_min, display_max)
         fmt.axis.set_data_interval(display_min, display_max)
 
-        # decide on locator to use
+        amin = np.amin(array)
+        amax = np.amax(array)
+        smin = np.amin(sizes)
+        smax = np.amax(sizes)
+
         if show_at is None:
-            show_at = np.array([.25, .5, .75, 1.])
-        show_at = np.asarray(show_at)
-        if np.any(show_at < 0) or np.any(show_at > 1):
-            raise ValueError(
-                "show_at values must be between 0 and 1 (percentiles), "
-                f"got {show_at}."
+            # Auto: nice values in data space, sampled down to num_handle entries
+            locator = mpl.ticker.MaxNLocator(
+                nbins=max(20, num_handle * 4), steps=[1, 2, 5, 10]
             )
-        if spacing == "percentile":
-            ix = np.clip((show_at * len(sizes) - 1), 0, len(sizes) - 1).astype(int)
-            handle_sizes = sizes[ix]
-            handle_labels = array[ix]
+            ticks = np.asarray(locator.tick_values(func(amin), func(amax)))
+            ticks = ticks[(ticks >= func(amin)) & (ticks <= func(amax))]
+            if len(ticks) == 0:
+                ticks = np.array([func(amin), func(amax)])
+            n = min(num_handle, len(ticks))
+            ix = np.round(np.linspace(0, len(ticks) - 1, n)).astype(int)
+            handle_labels = ticks[np.unique(ix)]
+            handle_sizes = np.interp(handle_labels, [func(amin), func(amax)], [smin, smax])
         else:
-            amin = np.amin(array)
-            amax = np.amax(array)
-            smin = np.amin(sizes)
-            smax = np.amax(sizes)
-            handle_sizes = np.interp(show_at, [0, 1], [smin, smax])
-            handle_labels = np.interp(show_at, [0, 1], [amin, amax])
-        handle_labels = func(handle_labels)
+            show_at = np.asarray(show_at)
+            if np.any(show_at < 0) or np.any(show_at > 1):
+                raise ValueError(
+                    "show_at values must be between 0 and 1 (percentiles), "
+                    f"got {show_at}."
+                )
+            if spacing == "percentile":
+                ix = np.clip((show_at * len(sizes) - 1), 0, len(sizes) - 1).astype(int)
+                handle_sizes = sizes[ix]
+                handle_labels = array[ix]
+            else:
+                handle_sizes = np.interp(show_at, [0, 1], [smin, smax])
+                handle_labels = np.interp(show_at, [0, 1], [amin, amax])
+            handle_labels = func(handle_labels)
 
         num_entry = len(handle_labels)
         if colors is None:
@@ -642,6 +664,13 @@ class SizeLegend(ListLegend):
         if hasattr(fmt, "set_locs"):
             fmt.set_locs(handle_labels)
 
+        # When fmt was not specified, use {:g} so whole-number floats like
+        # 10.0 display as "10" rather than "10.0".
+        if _auto_fmt and np.issubdtype(handle_labels.dtype, np.floating):
+            _label_fmt = lambda v: f"{v:g}"
+        else:
+            _label_fmt = fmt
+
         for i, (s, label, color) in enumerate(zip(handle_sizes,
                                                   handle_labels,
                                                   handle_colors)):
@@ -657,7 +686,7 @@ class SizeLegend(ListLegend):
             if labels is not None:
                 size_labels.append(labels[i])
             else:
-                size_labels.append(fmt(label))
+                size_labels.append(_label_fmt(label))
 
         options = dict(
             frameon=False,

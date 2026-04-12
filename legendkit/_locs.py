@@ -88,12 +88,14 @@ class Locs:
         replacement = self.combs.get(loc)
         if replacement is not None:
             loc = replacement[0]
-            bbox = replacement[1]
-            offset_func = replacement[2]
-            bbox_to_anchor = offset_func(*bbox, deviation)
-            if isinstance(ax, Axes):
-                bbox_transform = ax.transAxes
-            else:
-                fig = ax.get_figure()
-                bbox_transform = fig.transSubfigure
+            # Only apply default anchor/transform when user didn't supply them
+            if bbox_to_anchor is None and bbox_transform is None:
+                bbox = replacement[1]
+                offset_func = replacement[2]
+                bbox_to_anchor = offset_func(*bbox, deviation)
+                if isinstance(ax, Axes):
+                    bbox_transform = ax.transAxes
+                else:
+                    fig = ax.get_figure()
+                    bbox_transform = fig.transSubfigure
         return loc, bbox_to_anchor, bbox_transform

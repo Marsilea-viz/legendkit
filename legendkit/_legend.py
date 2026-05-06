@@ -3,7 +3,6 @@ from __future__ import annotations
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import _api
 from matplotlib.axes import Axes
 from matplotlib.collections import Collection
 from matplotlib.colors import is_color_like
@@ -202,8 +201,9 @@ class ListLegend(Legend):
                  **kwargs,
                  ):
 
-        _api.check_in_list(["top", "bottom", "left", "right"],
-                           title_loc=title_loc)
+        title_loc_options = {"top", "bottom", "left", "right"}
+        if title_loc not in title_loc_options:
+            raise ValueError("`title_loc` must be one of 'top', 'bottom', 'left', 'right'")
         self._has_parent = ax is not None
         self._is_axes = isinstance(ax, Axes)
         parent = None

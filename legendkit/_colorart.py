@@ -4,7 +4,7 @@ import matplotlib as mpl
 import matplotlib.transforms as mtransforms
 import matplotlib.path as mpath
 import numpy as np
-from matplotlib import _api, cm, contour, ticker, colors
+from matplotlib import cm, contour, ticker, colors
 from matplotlib import pyplot as plt
 from matplotlib.artist import Artist
 from matplotlib.axes import Axes
@@ -239,10 +239,15 @@ class ColorArt(Artist):
         elif isinstance(mappable, Artist):
             alpha = mappable.get_alpha()
 
-        _api.check_in_list(['vertical', 'horizontal'], orientation=orientation)
-        _api.check_in_list(['both', 'left', 'right', 'top', 'bottom'],
-                           ticklocation=ticklocation)
-        _api.check_in_list(['uniform', 'proportional'], spacing=spacing)
+        orientation_options = {'vertical', 'horizontal'}
+        if orientation not in orientation_options:
+            raise ValueError("`orientation` must be 'vertical' or 'horizontal'")
+        ticklocation_options = {'top', 'bottom', 'left', 'right'}
+        if ticklocation not in ticklocation_options:
+            raise ValueError("`ticklocation` must be 'top', 'bottom', 'left' or 'right'")
+        spacing_options = {'uniform', 'proportional'}
+        if spacing not in spacing_options:
+            raise ValueError("`spacing` must be 'uniform' or 'proportional'")
 
         extend = None
         if extend is None:
@@ -262,10 +267,15 @@ class ColorArt(Artist):
         self.values = values
         self.boundaries = boundaries
         self.spacing = spacing
-        self._inside = _api.check_getitem(
-            {'neither': slice(0, None), 'both': slice(1, -1),
-             'min': slice(1, None), 'max': slice(0, -1)},
-            extend=extend)
+        extend_mapper = {
+            'neither': slice(0, None),
+            'both': slice(1, -1),
+            'min': slice(1, None),
+            'max': slice(0, -1)
+        }
+        self._inside = extend_mapper.get(extend, None)
+        if self._inside is None:
+            raise ValueError("`extend` must be one of 'min', 'max', 'neither', or 'both'")
         self.orientation = orientation
 
         # handle locator

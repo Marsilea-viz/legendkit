@@ -46,7 +46,8 @@ class DrawingArea(MatplotlibDrawingArea):
                 # Rasterized children draw into a buffer at renderer.dpi,
                 # so we scale transforms by mag = dpi/72. stop_rasterizing()
                 # divides back by mag when placing the image.
-                mag = renderer.dpi / 72
+                figdpi = 72 * dpi_cor
+                mag = renderer.dpi / figdpi
                 raster_dpi_cor = dpi_cor * mag
                 self.dpi_transform.clear()
                 self.dpi_transform.scale(raster_dpi_cor)

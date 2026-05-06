@@ -242,9 +242,9 @@ class ColorArt(Artist):
         orientation_options = {'vertical', 'horizontal'}
         if orientation not in orientation_options:
             raise ValueError("`orientation` must be 'vertical' or 'horizontal'")
-        ticklocation_options = {'top', 'bottom', 'left', 'right'}
+        ticklocation_options = {'both', 'top', 'bottom', 'left', 'right'}
         if ticklocation not in ticklocation_options:
-            raise ValueError("`ticklocation` must be 'top', 'bottom', 'left' or 'right'")
+            raise ValueError("`ticklocation` must be 'both', 'top', 'bottom', 'left' or 'right'")
         spacing_options = {'uniform', 'proportional'}
         if spacing not in spacing_options:
             raise ValueError("`spacing` must be 'uniform' or 'proportional'")

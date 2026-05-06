@@ -42,29 +42,24 @@ class DrawingArea(MatplotlibDrawingArea):
             if self._clip_children and not (c.clipbox or c._clippath):
                 c.set_clip_path(tpath)
             if c.get_rasterized() and isinstance(renderer, MixedModeRenderer):
-                # When using MixedModeRenderer (PDF/SVG/PS), the figure DPI is
-                # set to the vector renderer's DPI (typically 72 pt/inch), so
-                # dpi_cor ≈ 1.0. But rasterized children are drawn into a
-                # RendererAgg buffer at renderer.dpi (the user's requested DPI).
-                # Both dpi_transform and offset_transform must be scaled by
-                # mag = dpi/figdpi so geometry lands at correct raster pixels.
-                # stop_rasterizing() will divide back by mag when placing the
-                # image. We round the scaled translation to integer pixels to
-                # avoid sub-pixel drift caused by floating-point rounding of
-                # the crop slice indices in stop_rasterizing().
-                mag = renderer.dpi / renderer._figdpi
+                # Vector backends (SVG/PDF/PS) use 72 pts/inch internally.
+                # Rasterized children draw into a buffer at renderer.dpi,
+                # so we scale transforms by mag = dpi/72. stop_rasterizing()
+                # divides back by mag when placing the image.
+                figdpi = 72 * dpi_cor
+                mag = renderer.dpi / figdpi
                 raster_dpi_cor = dpi_cor * mag
                 self.dpi_transform.clear()
                 self.dpi_transform.scale(raster_dpi_cor)
 
-                off_mat = self.offset_transform.get_matrix().copy()
-                scaled_off = off_mat.copy()
-                off_mat[:2, 2] *= mag
-                self.offset_transform.set_matrix(scaled_off)
+                save_mat = self.offset_transform.get_matrix().copy()
+                scaled_mat = save_mat.copy()
+                scaled_mat[:2, 2] *= mag
+                self.offset_transform.set_matrix(scaled_mat)
                 c.draw(renderer)
                 self.dpi_transform.clear()
                 self.dpi_transform.scale(dpi_cor)
-                self.offset_transform.set_matrix(off_mat)
+                self.offset_transform.set_matrix(save_mat)
             else:
                 c.draw(renderer)
 

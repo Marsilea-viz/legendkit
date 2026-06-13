@@ -10,8 +10,12 @@ from matplotlib.artist import Artist
 from matplotlib.axes import Axes
 from matplotlib.collections import LineCollection, PatchCollection
 from matplotlib.font_manager import FontProperties
-from matplotlib.offsetbox import DrawingArea as MatplotlibDrawingArea, VPacker, TextArea, \
-    AnchoredOffsetbox
+from matplotlib.offsetbox import (
+    DrawingArea as MatplotlibDrawingArea,
+    VPacker,
+    TextArea,
+    AnchoredOffsetbox,
+)
 from matplotlib.patches import Rectangle
 from matplotlib.text import Text
 from matplotlib.backends.backend_mixed import MixedModeRenderer
@@ -26,18 +30,17 @@ def get_colormap(cmap):
 
 
 class DrawingArea(MatplotlibDrawingArea):
-
     def draw(self, renderer):
-
-        dpi_cor = renderer.points_to_pixels(1.)
+        dpi_cor = renderer.points_to_pixels(1.0)
         self.dpi_transform.clear()
         self.dpi_transform.scale(dpi_cor)
 
         tpath = mtransforms.TransformedPath(
-            mpath.Path([[0, 0], [0, self.height],
-                        [self.width, self.height],
-                        [self.width, 0]]),
-            self.get_transform())
+            mpath.Path(
+                [[0, 0], [0, self.height], [self.width, self.height], [self.width, 0]]
+            ),
+            self.get_transform(),
+        )
         for c in self._children:
             if self._clip_children and not (c.clipbox or c._clippath):
                 c.set_clip_path(tpath)
@@ -152,52 +155,47 @@ class ColorArt(Artist):
     def __repr__(self):
         return "<ColorArt>"
 
-    def __init__(self,
-                 mappable=None,
-                 cmap=None,
-                 norm=None,
-                 *,
-                 ax: Axes = None,
-                 alpha=None,
-                 values=None,
-                 boundaries=None,
-                 # extend=None,
-                 # extendfrac=None,
-                 # extendrect=False,
-                 flip=False,
-                 spacing='uniform',
-                 orientation="vertical",
-
-                 ticks=None,
-                 format=None,
-                 tick_width=1,
-                 tick_size=0.25,
-                 tick_color="white",
-                 ticklabel_loc="auto",
-                 ticklocation="both",
-
-                 width: float = None,  # relative to fontsize
-                 height: float = None,
-                 # arguments from legend
-                 borderpad: float = None,
-                 textpad: float = None,
-                 borderaxespad: float = None,
-
-                 prop=None,
-                 fontsize=None,
-                 title=None,  # legend title
-                 title_fontsize=None,  # legend title font size
-                 title_fontproperties=None,  # legend title font size
-                 alignment="left",
-
-                 loc=None,
-                 deviation=0.05,
-                 bbox_to_anchor=None,
-                 bbox_transform=None,
-
-                 rasterized=True,
-
-                 ):
+    def __init__(
+        self,
+        mappable=None,
+        cmap=None,
+        norm=None,
+        *,
+        ax: Axes = None,
+        alpha=None,
+        values=None,
+        boundaries=None,
+        # extend=None,
+        # extendfrac=None,
+        # extendrect=False,
+        flip=False,
+        spacing="uniform",
+        orientation="vertical",
+        ticks=None,
+        format=None,
+        tick_width=1,
+        tick_size=0.25,
+        tick_color="white",
+        ticklabel_loc="auto",
+        ticklocation="both",
+        width: float = None,  # relative to fontsize
+        height: float = None,
+        # arguments from legend
+        borderpad: float = None,
+        textpad: float = None,
+        borderaxespad: float = None,
+        prop=None,
+        fontsize=None,
+        title=None,  # legend title
+        title_fontsize=None,  # legend title font size
+        title_fontproperties=None,  # legend title font size
+        alignment="left",
+        loc=None,
+        deviation=0.05,
+        bbox_to_anchor=None,
+        bbox_transform=None,
+        rasterized=True,
+    ):
         super().__init__()
         if ax is None:
             ax = plt.gca()
@@ -234,25 +232,28 @@ class ColorArt(Artist):
         elif isinstance(mappable, Artist):
             alpha = mappable.get_alpha()
 
-        orientation_options = {'vertical', 'horizontal'}
+        orientation_options = {"vertical", "horizontal"}
         if orientation not in orientation_options:
             raise ValueError("`orientation` must be 'vertical' or 'horizontal'")
-        ticklocation_options = {'both', 'top', 'bottom', 'left', 'right'}
+        ticklocation_options = {"both", "top", "bottom", "left", "right"}
         if ticklocation not in ticklocation_options:
-            raise ValueError("`ticklocation` must be 'both', 'top', 'bottom', 'left' or 'right'")
-        spacing_options = {'uniform', 'proportional'}
+            raise ValueError(
+                "`ticklocation` must be 'both', 'top', 'bottom', 'left' or 'right'"
+            )
+        spacing_options = {"uniform", "proportional"}
         if spacing not in spacing_options:
             raise ValueError("`spacing` must be 'uniform' or 'proportional'")
 
         extend = None
         if extend is None:
-            if (not isinstance(mappable, contour.ContourSet)) \
-                    and (getattr(cmap, 'colorbar_extend', False) is not False):
+            if (not isinstance(mappable, contour.ContourSet)) and (
+                getattr(cmap, "colorbar_extend", False) is not False
+            ):
                 extend = cmap.colorbar_extend
-            elif hasattr(norm, 'extend'):
+            elif hasattr(norm, "extend"):
                 extend = norm.extend
             else:
-                extend = 'neither'
+                extend = "neither"
         self.extend = extend
         self.flip = flip
         self.alpha = None
@@ -263,14 +264,16 @@ class ColorArt(Artist):
         self.boundaries = boundaries
         self.spacing = spacing
         extend_mapper = {
-            'neither': slice(0, None),
-            'both': slice(1, -1),
-            'min': slice(1, None),
-            'max': slice(0, -1)
+            "neither": slice(0, None),
+            "both": slice(1, -1),
+            "min": slice(1, None),
+            "max": slice(0, -1),
         }
         self._inside = extend_mapper.get(extend, None)
         if self._inside is None:
-            raise ValueError("`extend` must be one of 'min', 'max', 'neither', or 'both'")
+            raise ValueError(
+                "`extend` must be one of 'min', 'max', 'neither', or 'both'"
+            )
         self.orientation = orientation
 
         # handle locator
@@ -322,17 +325,25 @@ class ColorArt(Artist):
         if loc is None:
             loc = "out right center"
 
-        self._loc, self._bbox_to_anchor, self._bbox_transform = \
-            Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
-                             bbox_transform=bbox_transform,
-                             deviation=deviation)
+        self._loc, self._bbox_to_anchor, self._bbox_transform = Locs().transform(
+            ax,
+            loc,
+            bbox_to_anchor=bbox_to_anchor,
+            bbox_transform=bbox_transform,
+            deviation=deviation,
+        )
 
-        self.textpad = mpl.rcParams[
-            'legend.handletextpad'] if textpad is None else textpad
-        self.borderpad = mpl.rcParams[
-            'legend.borderpad'] if borderpad is None else borderpad
-        self.borderaxespad = mpl.rcParams[
-            'legend.borderaxespad'] if borderaxespad is None else borderaxespad
+        self.textpad = (
+            mpl.rcParams["legend.handletextpad"] if textpad is None else textpad
+        )
+        self.borderpad = (
+            mpl.rcParams["legend.borderpad"] if borderpad is None else borderpad
+        )
+        self.borderaxespad = (
+            mpl.rcParams["legend.borderaxespad"]
+            if borderaxespad is None
+            else borderaxespad
+        )
 
         # the container for title, colorbar, ticks and tick labels
         self._final_pack = None
@@ -347,7 +358,7 @@ class ColorArt(Artist):
             if width is not None:
                 self.width = width * self._fontsize
             else:
-                self.width = 2. * self._fontsize
+                self.width = 2.0 * self._fontsize
             if height is not None:
                 self.height = height * self._fontsize
             else:
@@ -357,7 +368,7 @@ class ColorArt(Artist):
             if height is not None:
                 self.height = height * self._fontsize
             else:
-                self.height = 2. * self._fontsize
+                self.height = 2.0 * self._fontsize
             if width is not None:
                 self.width = width * self._fontsize
             else:
@@ -377,7 +388,7 @@ class ColorArt(Artist):
         canvas = DrawingArea(da_width, da_height, clip=False)
         # self._add_color_patches(self._cbar_canvas)
         # canvas.set_figure(self.figure)
-        canvas.figure = self.figure
+        canvas.set_figure(self.figure)
 
         cmap_caller = get_colormap(self.cmap)
         colors_list = cmap_caller(np.arange(cmap_caller.N))
@@ -389,13 +400,21 @@ class ColorArt(Artist):
         if isinstance(self.norm, colors.BoundaryNorm):
             if self.orientation == "vertical":
                 for i, (y1, y2) in enumerate(zip(locs, locs[1::])):
-                    rects.append(Rectangle((0, y1), width=self.width,
-                                           height=y2 - y1, fc=colors_list[i]))
+                    rects.append(
+                        Rectangle(
+                            (0, y1), width=self.width, height=y2 - y1, fc=colors_list[i]
+                        )
+                    )
             else:
                 for i, (x1, x2) in enumerate(zip(locs, locs[1::])):
-                    rects.append(Rectangle((x1, 0), width=x2 - x1,
-                                           height=self.height,
-                                           fc=colors_list[i]))
+                    rects.append(
+                        Rectangle(
+                            (x1, 0),
+                            width=x2 - x1,
+                            height=self.height,
+                            fc=colors_list[i],
+                        )
+                    )
         else:
             n = len(colors_list)
             for i, c in enumerate(colors_list):
@@ -403,17 +422,29 @@ class ColorArt(Artist):
                     # compute y0/y1 from index to avoid fp accumulation drift
                     y0 = self.height * i / n
                     y1 = self.height * (i + 1) / n
-                    rects.append(Rectangle((0, y0), width=self.width,
-                                           height=y1 - y0,
-                                           fc=c, antialiased=False,
-                                           alpha=self.alpha))
+                    rects.append(
+                        Rectangle(
+                            (0, y0),
+                            width=self.width,
+                            height=y1 - y0,
+                            fc=c,
+                            antialiased=False,
+                            alpha=self.alpha,
+                        )
+                    )
                 else:
                     x0 = self.width * i / n
                     x1 = self.width * (i + 1) / n
-                    rects.append(Rectangle((x0, 0), width=x1 - x0,
-                                           height=self.height,
-                                           fc=c, antialiased=False,
-                                           alpha=self.alpha))
+                    rects.append(
+                        Rectangle(
+                            (x0, 0),
+                            width=x1 - x0,
+                            height=self.height,
+                            fc=c,
+                            antialiased=False,
+                            alpha=self.alpha,
+                        )
+                    )
 
         patches = PatchCollection(rects, match_original=True)
         if self._rasterized:
@@ -424,13 +455,19 @@ class ColorArt(Artist):
         # the tick will only be added if shape is rect
         ticks1_lines = LineCollection(
             ticks1,
-            color=self.tick_color, zorder=100,
-            visible=True, linewidth=self.tick_width)
+            color=self.tick_color,
+            zorder=100,
+            visible=True,
+            linewidth=self.tick_width,
+        )
 
         ticks2_lines = LineCollection(
             ticks2,
-            color=self.tick_color, zorder=100,
-            visible=True, linewidth=self.tick_width)
+            color=self.tick_color,
+            zorder=100,
+            visible=True,
+            linewidth=self.tick_width,
+        )
 
         if self.ticklocation == "both":
             canvas.add_artist(ticks1_lines)
@@ -445,8 +482,7 @@ class ColorArt(Artist):
         va, ha = "bottom", "center"
         if self.orientation == "vertical":
             va, ha = "center", "left"
-        options = dict(va=va, ha=ha, fontsize=self._fontsize,
-                       fontproperties=self.prop)
+        options = dict(va=va, ha=ha, fontsize=self._fontsize, fontproperties=self.prop)
         for loc, label in zip(locs, ticklabels):
             if self.orientation == "vertical":
                 t = Text(label_x, loc, label, **options)
@@ -456,32 +492,39 @@ class ColorArt(Artist):
 
         if self.title is not None:
             if self.title_fontproperties is None:
-                textprops = dict(fontweight='bold', fontsize=self.title_fontsize)
+                textprops = dict(fontweight="bold", fontsize=self.title_fontsize)
+            elif isinstance(self.title_fontproperties, dict):
+                # pass keys directly to Text — fontsize/fontweight/color are
+                # valid Text kwargs, but NOT valid FontProperties kwargs.
+                textprops = dict(self.title_fontproperties)
             else:
                 textprops = dict(fontproperties=self.title_fontproperties)
             title_canvas = TextArea(self.title, textprops=textprops)
-            title_pack = VPacker(pad=0,
-                                 # A heuristic value to make the title
-                                 # not overlap with labels
-                                 sep=0.4 * self._fontsize,
-                                 children=[title_canvas, canvas],
-                                 align=self.alignment
-                                 )
+            title_pack = VPacker(
+                pad=0,
+                # A heuristic value to make the title
+                # not overlap with labels
+                sep=0.4 * self._fontsize,
+                children=[title_canvas, canvas],
+                align=self.alignment,
+            )
             # title_pack.set_figure(self.figure)
-            title_pack.figure = self.figure
+            title_pack.set_figure(self.figure)
             final_pack = title_pack
         else:
             final_pack = canvas
         self._final_pack = final_pack
         self._cbar_box = AnchoredOffsetbox(
-            self._loc, child=final_pack,
+            self._loc,
+            child=final_pack,
             pad=self.borderpad,
             borderpad=self.borderaxespad,
             bbox_transform=self._bbox_transform,
             bbox_to_anchor=self._bbox_to_anchor,
-            frameon=False)
+            frameon=False,
+        )
         # self._cbar_box.set_figure(self.figure)
-        self._cbar_box.figure = self.figure
+        self._cbar_box.set_figure(self.figure)
         if self.is_axes:
             self.axes.add_artist(self._cbar_box)
         else:
@@ -501,8 +544,7 @@ class ColorArt(Artist):
         renderer = self.figure.canvas.get_renderer()
         all_texts = []
         for t in ticklabels:
-            text_obj = Text(0, 0, t, fontsize=self._fontsize,
-                            fontproperties=self.prop)
+            text_obj = Text(0, 0, t, fontsize=self._fontsize, fontproperties=self.prop)
             if self.is_axes:
                 self.axes.add_artist(text_obj)
             else:
@@ -514,7 +556,7 @@ class ColorArt(Artist):
             x_sizes.append(bbox.xmax - bbox.xmin)
             y_sizes.append(bbox.ymax - bbox.ymin)
             t.remove()  # so it won't be drawn
-        dpi_cor = renderer.points_to_pixels(1.)
+        dpi_cor = renderer.points_to_pixels(1.0)
         x_offset = np.max(x_sizes) / dpi_cor
         y_offset = np.max(y_sizes) / dpi_cor
         return x_offset, y_offset
@@ -539,7 +581,7 @@ class ColorArt(Artist):
             b = self.norm.boundaries
         elif isinstance(self.norm, colors.NoNorm):
             # NoNorm has N blocks, so N+1 boundaries, centered on integers:
-            b = np.arange(self.cmap.N + 1) - .5
+            b = np.arange(self.cmap.N + 1) - 0.5
         elif self.boundaries is not None:
             b = self.boundaries
         else:
@@ -565,9 +607,9 @@ class ColorArt(Artist):
             self.norm.vmin = 0
             self.norm.vmax = 1
         self.norm.vmin, self.norm.vmax = mtransforms.nonsingular(
-            self.norm.vmin, self.norm.vmax, expander=0.1)
-        if (not isinstance(self.norm, colors.BoundaryNorm) and
-                (self.boundaries is None)):
+            self.norm.vmin, self.norm.vmax, expander=0.1
+        )
+        if not isinstance(self.norm, colors.BoundaryNorm) and (self.boundaries is None):
             b = self.norm.inverse(b)
 
         self._boundaries = np.asarray(b, dtype=float)
@@ -602,7 +644,8 @@ class ColorArt(Artist):
             base = self.norm._scale.base
             if locator is None:
                 locator = ticker.SymmetricalLogLocator(
-                    linthresh=self.norm.linthresh, base=base)
+                    linthresh=self.norm.linthresh, base=base
+                )
             if formatter is None:
                 formatter = ticker.LogFormatterSciNotation(base=base)
         elif self.boundaries is not None:
@@ -611,18 +654,18 @@ class ColorArt(Artist):
                 locator = ticker.FixedLocator(b, nbins=5)
         else:
             # AsinhNorm is introduced at 3.6
-            if hasattr(colors, 'AsinhNorm'):
+            if hasattr(colors, "AsinhNorm"):
                 if isinstance(self.norm, colors.AsinhNorm):
                     base = 10  # self.norm._scale.base
                     if locator is None:
                         locator = ticker.AsinhLocator(
-                            linear_width=self.norm.linear_width, base=base)
+                            linear_width=self.norm.linear_width, base=base
+                        )
                     if formatter is None:
                         if base > 1:
-                            formatter = ticker.LogFormatterSciNotation(
-                                base=base)
+                            formatter = ticker.LogFormatterSciNotation(base=base)
                         else:
-                            formatter = ticker.StrMethodFormatter('{x:.3g}')
+                            formatter = ticker.StrMethodFormatter("{x:.3g}")
             # most cases:
             if locator is None:
                 # we haven't set the locator explicitly, so use the default
@@ -662,8 +705,8 @@ class ColorArt(Artist):
             b = b[(b <= intv[1] * (1 + eps)) & (b >= intv[0] * (1 - eps))]
             # b = b[(b >= intv[0] * (1 - eps))]
         # else:
-            # eps = (intv[1] - intv[0]) * 1e-10
-            # b = b[(b <= intv[1] + eps) & (b >= intv[0] - eps)]
+        # eps = (intv[1] - intv[0]) * 1e-10
+        # b = b[(b <= intv[1] + eps) & (b >= intv[0] - eps)]
         locs, ticks1, ticks2 = self._locate(b)
         ticklabels = formatter.format_ticks(b)
         offset_string = formatter.get_offset()
@@ -699,8 +742,7 @@ class ColorArt(Artist):
         if self.orientation == "horizontal":
             h, w = w, h
 
-        if isinstance(self.norm, colors.BoundaryNorm) & \
-                (self.spacing == "uniform"):
+        if isinstance(self.norm, colors.BoundaryNorm) & (self.spacing == "uniform"):
             locs = np.linspace(0, h, len(locs))
         else:
             locs = (1 - locs) * h if self.flip else locs * h
@@ -723,12 +765,12 @@ class ColorArt(Artist):
     def _extend_lower(self):
         """Return whether the lower limit is open ended."""
         minmax = "max" if self.flip else "min"
-        return self.extend in ('both', minmax)
+        return self.extend in ("both", minmax)
 
     def _extend_upper(self):
         """Return whether the upper limit is open ended."""
         minmax = "min" if self.flip else "max"
-        return self.extend in ('both', minmax)
+        return self.extend in ("both", minmax)
 
     def set_alpha(self, alpha):
         self.alpha = None if isinstance(alpha, np.ndarray) else alpha

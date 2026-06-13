@@ -8,6 +8,7 @@ from matplotlib.patches import FancyBboxPatch
 
 from ._colorart import ColorArt
 from ._locs import Locs
+from ._paired_size import PairedSizeLegend
 
 
 def _create_children(artists: List[Artist]):
@@ -23,11 +24,12 @@ def _create_children(artists: List[Artist]):
             children += art.get_children()
         elif isinstance(art, ColorArt):
             children += art.get_children().get_children()
+        elif isinstance(art, PairedSizeLegend):
+            children.append(art._final_pack)
         elif isinstance(art, Artist):
             children.append(art)
         else:
-            raise TypeError(
-                f"Cannot parse object {str(art)} with type {type(art)}")
+            raise TypeError(f"Cannot parse object {str(art)} with type {type(art)}")
         try:
             # remove artist from the canvas to avoid rendering overlay
             art.remove()
@@ -39,24 +41,25 @@ def _create_children(artists: List[Artist]):
     return children
 
 
-def stack(legends,
-          ax=None,
-          orientation: str = "vertical",
-          spacing=2,
-          padding=2,
-          align="baseline",
-          mode="fixed",
-          loc="lower left",
-          frameon=False,
-          bbox_to_anchor=None,
-          bbox_transform=None,
-          deviation=0.05,
-          title: str = None,
-          title_loc: str = "top",
-          titlepad=0,
-          alignment: str = "center",
-          title_fontproperties: Dict = None
-          ):
+def stack(
+    legends,
+    ax=None,
+    orientation: str = "vertical",
+    spacing=2,
+    padding=2,
+    align="baseline",
+    mode="fixed",
+    loc="lower left",
+    frameon=False,
+    bbox_to_anchor=None,
+    bbox_transform=None,
+    deviation=0.05,
+    title: str = None,
+    title_loc: str = "top",
+    titlepad=0,
+    alignment: str = "center",
+    title_fontproperties: Dict = None,
+):
     """Stack multiple artists together
 
     Parameters
@@ -118,15 +121,12 @@ def stack(legends,
     # Call different layout helper depends on orientation
     packer = VPacker if orientation == "vertical" else HPacker
 
-    children_pack = packer(pad=0,
-                           sep=spacing,
-                           align=align,
-                           mode=mode,
-                           children=children
-                           )
+    children_pack = packer(
+        pad=0, sep=spacing, align=align, mode=mode, children=children
+    )
     if title is not None:
         if title_fontproperties is None:
-            title_fontproperties = {'weight': 'bold'}
+            title_fontproperties = {"weight": "bold"}
         title_box = TextArea(title, textprops=title_fontproperties)
 
         content = [title_box, children_pack]
@@ -135,27 +135,34 @@ def stack(legends,
             packer = VPacker
         else:
             content = content[::-1]
-        pack = packer(pad=titlepad, sep=spacing / 2, align=alignment,
-                      mode=mode, children=content)
+        pack = packer(
+            pad=titlepad, sep=spacing / 2, align=alignment, mode=mode, children=content
+        )
     else:
         pack = children_pack
     # If user supply the ax
     # The legend box will be rendered on the axes
     # So user don't have to call ax.add_artist()
     if ax is not None:
-        loc, bbox_to_anchor, bbox_transform = \
-            Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
-                             bbox_transform=bbox_transform,
-                             deviation=deviation)
-    legend_box = AnchoredOffsetbox(child=pack,
-                                   loc=loc,
-                                   pad=padding,
-                                   borderpad=0,
-                                   prop=None,
-                                   frameon=frameon,
-                                   bbox_to_anchor=bbox_to_anchor,
-                                   bbox_transform=bbox_transform, )
+        loc, bbox_to_anchor, bbox_transform = Locs().transform(
+            ax,
+            loc,
+            bbox_to_anchor=bbox_to_anchor,
+            bbox_transform=bbox_transform,
+            deviation=deviation,
+        )
+    legend_box = AnchoredOffsetbox(
+        child=pack,
+        loc=loc,
+        pad=padding,
+        borderpad=0,
+        prop=None,
+        frameon=frameon,
+        bbox_to_anchor=bbox_to_anchor,
+        bbox_transform=bbox_transform,
+    )
     if ax is not None:
+        legend_box.set_figure(ax.figure)
         if ax.legend_ is None:
             ax.legend_ = legend_box
         else:
@@ -163,6 +170,17 @@ def stack(legends,
     return legend_box
 
 
-# Create two helper function
+# Create two helper functions with full IDE support
 vstack = partial(stack, orientation="vertical")
+vstack.__doc__ = stack.__doc__
+vstack.__name__ = "vstack"
+vstack.__qualname__ = "vstack"
+vstack.__annotations__ = stack.__annotations__
+vstack.__wrapped__ = stack
+
 hstack = partial(stack, orientation="horizontal")
+hstack.__doc__ = stack.__doc__
+hstack.__name__ = "hstack"
+hstack.__qualname__ = "hstack"
+hstack.__annotations__ = stack.__annotations__
+hstack.__wrapped__ = stack

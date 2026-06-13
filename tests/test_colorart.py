@@ -28,6 +28,7 @@ def make_mappable(cmap="cool", norm=None, vmin=None, vmax=None):
 # Basic construction
 # ------------------------------------------------------------------
 
+
 def test_colorart_basic():
     ax, m = make_mappable()
     ca = colorart(m, ax=ax)
@@ -50,6 +51,7 @@ def test_colorart_title():
 # Orientation
 # ------------------------------------------------------------------
 
+
 def test_colorart_vertical():
     ax, m = make_mappable()
     ca = colorart(m, ax=ax, orientation="vertical")
@@ -58,14 +60,14 @@ def test_colorart_vertical():
 
 def test_colorart_horizontal():
     ax, m = make_mappable()
-    ca = colorart(m, ax=ax, orientation="horizontal",
-                  loc="out upper center")
+    ca = colorart(m, ax=ax, orientation="horizontal", loc="out upper center")
     assert ca is not None
 
 
 # ------------------------------------------------------------------
 # flip
 # ------------------------------------------------------------------
+
 
 def test_colorart_flip_true():
     ax, m = make_mappable()
@@ -83,6 +85,7 @@ def test_colorart_flip_false():
 # ticks / format
 # ------------------------------------------------------------------
 
+
 def test_colorart_custom_ticks():
     ax, m = make_mappable()
     ca = colorart(m, ax=ax, ticks=[0.2, 0.5, 0.8])
@@ -99,6 +102,7 @@ def test_colorart_string_format():
 # BoundaryNorm
 # ------------------------------------------------------------------
 
+
 def test_colorart_boundary_norm():
     bounds = [0, 0.25, 0.5, 0.75, 1.0]
     norm = BoundaryNorm(bounds, ncolors=4)
@@ -111,6 +115,7 @@ def test_colorart_boundary_norm():
 # LogNorm
 # ------------------------------------------------------------------
 
+
 def test_colorart_log_norm():
     norm = LogNorm(vmin=0.01, vmax=1.0)
     ax, m = make_mappable(norm=norm)
@@ -122,11 +127,21 @@ def test_colorart_log_norm():
 # Location
 # ------------------------------------------------------------------
 
-@pytest.mark.parametrize("loc", [
-    "out right upper", "out right center", "out right lower",
-    "out upper left", "out upper center", "out upper right",
-    "out lower left", "out lower center", "out lower right",
-])
+
+@pytest.mark.parametrize(
+    "loc",
+    [
+        "out right upper",
+        "out right center",
+        "out right lower",
+        "out upper left",
+        "out upper center",
+        "out upper right",
+        "out lower left",
+        "out lower center",
+        "out lower right",
+    ],
+)
 def test_colorart_loc(loc):
     ax, m = make_mappable()
     ca = colorart(m, ax=ax, loc=loc)
@@ -137,6 +152,7 @@ def test_colorart_loc(loc):
 # Size
 # ------------------------------------------------------------------
 
+
 def test_colorart_custom_size():
     ax, m = make_mappable()
     ca = colorart(m, ax=ax, width=3, height=10)
@@ -146,6 +162,7 @@ def test_colorart_custom_size():
 # ------------------------------------------------------------------
 # set_border raises NotImplementedError
 # ------------------------------------------------------------------
+
 
 def test_colorart_set_border_not_implemented():
     ax, m = make_mappable()
@@ -158,6 +175,7 @@ def test_colorart_set_border_not_implemented():
 # ticklocation
 # ------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("ticklocation", ["both", "left", "right"])
 def test_colorart_ticklocation(ticklocation):
     ax, m = make_mappable()
@@ -168,6 +186,7 @@ def test_colorart_ticklocation(ticklocation):
 # ------------------------------------------------------------------
 # remove
 # ------------------------------------------------------------------
+
 
 def test_colorart_remove():
     ax, m = make_mappable()

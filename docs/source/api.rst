@@ -9,6 +9,7 @@ API Reference
     legend
     cat_legend
     size_legend
+    paired_size_legend
     colorbar
     colorart
     vstack

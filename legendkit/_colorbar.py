@@ -67,30 +67,29 @@ class Colorbar(MPLColorbar):
         return "<Colorbar>"
 
     def __init__(
-            self,
-            mappable=None,
-            norm=None,
-            cmap=None,
-            *,
-            ax: Axes = None,
-            style: str = "white",  # normal, white
-            shape: str = "rect",
-            width: float = None,
-            height: float = None,
-            loc=None,
-            deviation=0.05,
-            bbox_to_anchor: Any = None,
-            bbox_transform: Any = None,
-            axes_class: Any = None,
-            axes_kwargs: Any = None,
-            borderpad: Any = 0,
-            orientation: str = "vertical",
-            title: str = None,
-            alignment: str = "left",
-            title_fontproperties: Dict = None,
-            **colorbar_options,
+        self,
+        mappable=None,
+        norm=None,
+        cmap=None,
+        *,
+        ax: Axes = None,
+        style: str = "white",  # normal, white
+        shape: str = "rect",
+        width: float = None,
+        height: float = None,
+        loc=None,
+        deviation=0.05,
+        bbox_to_anchor: Any = None,
+        bbox_transform: Any = None,
+        axes_class: Any = None,
+        axes_kwargs: Any = None,
+        borderpad: Any = 0,
+        orientation: str = "vertical",
+        title: str = None,
+        alignment: str = "left",
+        title_fontproperties: Dict = None,
+        **colorbar_options,
     ):
-
         if ax is None:
             ax = plt.gca()
         if loc is None:
@@ -99,7 +98,7 @@ class Colorbar(MPLColorbar):
         if (width is None) and (height is None):
             width, height = (0.3, 1.5)
             # Flip width and height
-            if orientation == 'horizontal':
+            if orientation == "horizontal":
                 width, height = height, width
         elif (width is not None) and (height is not None):
             pass
@@ -109,42 +108,54 @@ class Colorbar(MPLColorbar):
             else:
                 height = 0.3 if orientation == "horizontal" else 1.5
 
-        loc, bbox_to_anchor, bbox_transform = \
-            Locs().transform(ax, loc, bbox_to_anchor=bbox_to_anchor,
-                             bbox_transform=bbox_transform,
-                             deviation=deviation)
+        loc, bbox_to_anchor, bbox_transform = Locs().transform(
+            ax,
+            loc,
+            bbox_to_anchor=bbox_to_anchor,
+            bbox_transform=bbox_transform,
+            deviation=deviation,
+        )
 
-        axins = inset_axes(ax, width=width, height=height, borderpad=borderpad,
-                           bbox_to_anchor=bbox_to_anchor,
-                           bbox_transform=bbox_transform, loc=loc,
-                           axes_class=axes_class, axes_kwargs=axes_kwargs,
-                           )
+        axins = inset_axes(
+            ax,
+            width=width,
+            height=height,
+            borderpad=borderpad,
+            bbox_to_anchor=bbox_to_anchor,
+            bbox_transform=bbox_transform,
+            loc=loc,
+            axes_class=axes_class,
+            axes_kwargs=axes_kwargs,
+        )
 
-        super().__init__(axins,
-                         mappable,
-                         norm=norm,
-                         cmap=cmap,
-                         orientation=orientation,
-                         **colorbar_options)
+        super().__init__(
+            axins,
+            mappable,
+            norm=norm,
+            cmap=cmap,
+            orientation=orientation,
+            **colorbar_options,
+        )
 
         if style == "white":
             # Inward ticks and white color
-            self.long_axis \
-                .set_tick_params(direction="in", color="white",
-                                 width=1, size=5)
-            self.long_axis \
-                .set_tick_params(which="minor",
-                                 direction="in", color="white",
-                                 )
+            self.long_axis.set_tick_params(
+                direction="in", color="white", width=1, size=5
+            )
+            self.long_axis.set_tick_params(
+                which="minor",
+                direction="in",
+                color="white",
+            )
+
             # turn off outlines
             self.outline.set_visible(0)
 
         if title is not None:
             if title_fontproperties is None:
-                title_fontproperties = {'weight': 'bold', 'size': 'medium'}
-            self.ax.set_title(title, loc=alignment,
-                              fontdict=title_fontproperties)
-        self.ax.set_facecolor('none')
+                title_fontproperties = {"weight": "bold", "size": "medium"}
+            self.ax.set_title(title, loc=alignment, fontdict=title_fontproperties)
+        self.ax.set_facecolor("none")
         # shape clip not work for BoundaryNorm or CounterSet
         if self.solids is not None:
             if shape != "rect":
@@ -152,22 +163,21 @@ class Colorbar(MPLColorbar):
             if shape == "ellipse":
                 xrange = self.get_xrange()
                 yrange = self.get_yrange()
-                patch = Ellipse(self.get_midpoint(), xrange, yrange,
-                                facecolor='none')
+                patch = Ellipse(self.get_midpoint(), xrange, yrange, facecolor="none")
                 self.ax.add_patch(patch)
                 self.solids.set_clip_path(patch)
             elif shape == "triangle":
                 corner = self.get_corner()
-                patch = Polygon([corner[0], corner[1], corner[2]],
-                                facecolor='none')
+                patch = Polygon([corner[0], corner[1], corner[2]], facecolor="none")
                 self.ax.add_patch(patch)
                 self.solids.set_clip_path(patch)
             elif shape == "trapezoid":
                 corner = self.get_corner()
                 xrange = self.get_xrange()
-                patch = Polygon([corner[0], corner[1], corner[2],
-                                 (xrange / 2.5, corner[3][1])],
-                                facecolor='none')
+                patch = Polygon(
+                    [corner[0], corner[1], corner[2], (xrange / 2.5, corner[3][1])],
+                    facecolor="none",
+                )
                 self.ax.add_patch(patch)
                 self.solids.set_clip_path(patch)
             else:
@@ -204,5 +214,9 @@ class Colorbar(MPLColorbar):
         """
         xlims = np.sort(self.ax.get_xlim())
         ylims = np.sort(self.ax.get_ylim())
-        return (xlims[0], ylims[0]), (xlims[0], ylims[1]), \
-            (xlims[1], ylims[1]), (xlims[1], ylims[0])
+        return (
+            (xlims[0], ylims[0]),
+            (xlims[0], ylims[1]),
+            (xlims[1], ylims[1]),
+            (xlims[1], ylims[0]),
+        )

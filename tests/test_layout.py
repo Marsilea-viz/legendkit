@@ -26,10 +26,12 @@ def make_legends(n=3, ax=None):
     if ax is None:
         ax = make_ax()
     return [
-        cat_legend(ax=ax,
-                   colors=["#A7D2CB", "#F2D388"],
-                   labels=["Item 1", "Item 2"],
-                   title=f"Legend {i + 1}")
+        cat_legend(
+            ax=ax,
+            colors=["#A7D2CB", "#F2D388"],
+            labels=["Item 1", "Item 2"],
+            title=f"Legend {i + 1}",
+        )
         for i in range(n)
     ]
 
@@ -37,6 +39,7 @@ def make_legends(n=3, ax=None):
 # ------------------------------------------------------------------
 # vstack
 # ------------------------------------------------------------------
+
 
 def test_vstack_basic():
     ax = make_ax()
@@ -78,6 +81,7 @@ def test_vstack_returns_without_ax():
 # hstack
 # ------------------------------------------------------------------
 
+
 def test_hstack_basic():
     ax = make_ax()
     legs = make_legends(3, ax=ax)
@@ -103,10 +107,19 @@ def test_hstack_with_spacing():
 # Location
 # ------------------------------------------------------------------
 
-@pytest.mark.parametrize("loc", [
-    "upper left", "upper right", "lower left", "lower right", "center",
-    "out right center", "out upper center",
-])
+
+@pytest.mark.parametrize(
+    "loc",
+    [
+        "upper left",
+        "upper right",
+        "lower left",
+        "lower right",
+        "center",
+        "out right center",
+        "out upper center",
+    ],
+)
 def test_vstack_loc(loc):
     ax = make_ax()
     legs = make_legends(2, ax=ax)
@@ -117,6 +130,7 @@ def test_vstack_loc(loc):
 # ------------------------------------------------------------------
 # Nested stacks
 # ------------------------------------------------------------------
+
 
 def test_nested_stack():
     ax = make_ax()
@@ -131,15 +145,13 @@ def test_nested_stack():
 # Mixed: legend + colorart
 # ------------------------------------------------------------------
 
+
 def test_vstack_legend_and_colorart():
     fig, ax = plt.subplots()
     data = np.random.rand(5, 5)
     m = ax.pcolormesh(data, cmap="cool")
     ca = colorart(m, ax=ax, title="Color")
-    leg = cat_legend(ax=ax,
-                     colors=["red", "blue"],
-                     labels=["A", "B"],
-                     title="Cat")
+    leg = cat_legend(ax=ax, colors=["red", "blue"], labels=["A", "B"], title="Cat")
     box = vstack([leg, ca], spacing=10, loc="out right center", ax=ax)
     assert box is not None
 
@@ -147,6 +159,7 @@ def test_vstack_legend_and_colorart():
 # ------------------------------------------------------------------
 # alignment
 # ------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("alignment", ["left", "center", "right"])
 def test_vstack_alignment(alignment):
@@ -160,7 +173,9 @@ def test_vstack_alignment(alignment):
 # TypeError on unsupported artist type
 # ------------------------------------------------------------------
 
+
 def test_stack_bad_type_raises():
     from legendkit.layout import stack
+
     with pytest.raises(TypeError):
         stack(["not_an_artist"], ax=make_ax())

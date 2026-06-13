@@ -20,10 +20,10 @@ from .handles import RectItem, CircleItem, LineItem, BoxplotItem
 
 _handlers = {
     # 'square': SquareItem,
-    'rect': RectItem,
+    "rect": RectItem,
     # 'circle': CircleItem,
-    'line': LineItem,
-    'boxplot': BoxplotItem,
+    "line": LineItem,
+    "boxplot": BoxplotItem,
 }
 
 _handle_marker = {
@@ -42,7 +42,7 @@ _handle_marker = {
     "hexagon": "h",
     "plus": "P",
     "cross": "X",
-    "asterisk": (6, 2, 0)
+    "asterisk": (6, 2, 0),
 }
 
 
@@ -54,16 +54,20 @@ def _get_legend_handles(axs, legend_handler_map=None):
     handles_original = []
     for ax in axs:
         handles_original += [
-            *(a for a in ax._children
-              if isinstance(a, (Line2D, Patch, Collection))),
-            *ax.containers]
+            *(a for a in ax._children if isinstance(a, (Line2D, Patch, Collection))),
+            *ax.containers,
+        ]
         # support parasite axes:
-        if hasattr(ax, 'parasites'):
+        if hasattr(ax, "parasites"):
             for axx in ax.parasites:
                 handles_original += [
-                    *(a for a in axx._children
-                      if isinstance(a, (Line2D, Patch, Collection))),
-                    *axx.containers]
+                    *(
+                        a
+                        for a in axx._children
+                        if isinstance(a, (Line2D, Patch, Collection))
+                    ),
+                    *axx.containers,
+                ]
 
     handler_map = Legend.get_default_handler_map()
 
@@ -75,7 +79,7 @@ def _get_legend_handles(axs, legend_handler_map=None):
 
     for handle in handles_original:
         label = handle.get_label()
-        if label != '_nolegend_' and has_handler(handler_map, handle):
+        if label != "_nolegend_" and has_handler(handler_map, handle):
             yield handle
 
 
@@ -83,7 +87,7 @@ _default_alignment = {
     "top": "left",
     "bottom": "left",
     "left": "center",
-    "right": "center"
+    "right": "center",
 }
 
 
@@ -179,31 +183,33 @@ class ListLegend(Legend):
     def __repr__(self):
         return "<ListLegend>"
 
-    def __init__(self,
-                 ax: Axes | FigureBase = None,
-                 legend_items=None,
-                 handles=None,
-                 labels=None,
-                 title_loc="top",  # "top" or "left",
-                 alignment=None,
-                 titlepad=0.5,
-                 draw=True,
-                 handler_map=None,
-                 loc=None,
-                 deviation=0.05,
-                 bbox_to_anchor=None,
-                 bbox_transform=None,
-                 frameon=False,
-                 fontsize=None,
-                 prop=None,
-                 handleheight=None,
-                 handlelength=None,
-                 **kwargs,
-                 ):
-
+    def __init__(
+        self,
+        ax: Axes | FigureBase = None,
+        legend_items=None,
+        handles=None,
+        labels=None,
+        title_loc="top",  # "top" or "left",
+        alignment=None,
+        titlepad=0.5,
+        draw=True,
+        handler_map=None,
+        loc=None,
+        deviation=0.05,
+        bbox_to_anchor=None,
+        bbox_transform=None,
+        frameon=False,
+        fontsize=None,
+        prop=None,
+        handleheight=None,
+        handlelength=None,
+        **kwargs,
+    ):
         title_loc_options = {"top", "bottom", "left", "right"}
         if title_loc not in title_loc_options:
-            raise ValueError("`title_loc` must be one of 'top', 'bottom', 'left', 'right'")
+            raise ValueError(
+                "`title_loc` must be one of 'top', 'bottom', 'left', 'right'"
+            )
         self._has_parent = ax is not None
         self._is_axes = isinstance(ax, Axes)
         parent = None
@@ -228,8 +234,7 @@ class ListLegend(Legend):
             if fontsize is not None:
                 self.prop = FontProperties(size=fontsize)
             else:
-                self.prop = FontProperties(
-                    size=mpl.rcParams["legend.fontsize"])
+                self.prop = FontProperties(size=mpl.rcParams["legend.fontsize"])
         else:
             self.prop = FontProperties._from_any(prop)
             if isinstance(prop, dict) and "size" not in prop:
@@ -240,8 +245,8 @@ class ListLegend(Legend):
         def val_or_rc(val, rc_name):
             return val if val is not None else mpl.rcParams[rc_name]
 
-        self.handlelength = val_or_rc(handlelength, 'legend.handlelength')
-        self.handleheight = val_or_rc(handleheight, 'legend.handleheight')
+        self.handlelength = val_or_rc(handlelength, "legend.handlelength")
+        self.handleheight = val_or_rc(handleheight, "legend.handleheight")
         handle_size = min(self.handleheight, self.handlelength)
 
         legend_handles = []
@@ -252,7 +257,7 @@ class ListLegend(Legend):
             legend_labels = []
             for handle in _get_legend_handles(axes, handler_map):
                 label = handle.get_label()
-                if label and not label.startswith('_'):
+                if label and not label.startswith("_"):
                     legend_handles.append(handle)
                     legend_labels.append(label)
         elif legend_items is not None:
@@ -263,8 +268,9 @@ class ListLegend(Legend):
                 else:
                     item = item[:3]
                     handle, label, handle_config = item
-                legend_handles.append(self._parse_handler(
-                    handle, handle_size, config=handle_config))
+                legend_handles.append(
+                    self._parse_handler(handle, handle_size, config=handle_config)
+                )
                 legend_labels.append(label)
         elif (handles is not None) & (labels is None):
             legend_handles = handles
@@ -282,22 +288,28 @@ class ListLegend(Legend):
             else:
                 loc = "center right"
         else:
-            loc, bbox_to_anchor, bbox_transform = \
-                Locs().transform(parent, loc, bbox_to_anchor=bbox_to_anchor,
-                                 bbox_transform=bbox_transform,
-                                 deviation=deviation)
+            loc, bbox_to_anchor, bbox_transform = Locs().transform(
+                parent,
+                loc,
+                bbox_to_anchor=bbox_to_anchor,
+                bbox_transform=bbox_transform,
+                deviation=deviation,
+            )
         if handler_map is None:
             handler_map = {}
-        handler_map.update({RectItem: RectHandler(),
-                            CircleItem: CircleHandler(),
-                            BoxplotItem: BoxplotHandler(),
-                            })
+        handler_map.update(
+            {
+                RectItem: RectHandler(),
+                CircleItem: CircleHandler(),
+                BoxplotItem: BoxplotHandler(),
+            }
+        )
         default_kwargs = dict(
             loc=loc,
             bbox_to_anchor=bbox_to_anchor,
             bbox_transform=bbox_transform,
             # Make the title bold if user supply no style
-            title_fontproperties={'weight': 'bold'},
+            title_fontproperties={"weight": "bold"},
             handler_map=handler_map,
             fontsize=self._fontsize,
             handleheight=self.handleheight,
@@ -306,10 +318,9 @@ class ListLegend(Legend):
         )
 
         final_options = {**default_kwargs, **kwargs}
-        super().__init__(parent,
-                         handles=legend_handles,
-                         labels=legend_labels,
-                         **final_options)
+        super().__init__(
+            parent, handles=legend_handles, labels=legend_labels, **final_options
+        )
         if alignment is None:
             alignment = _default_alignment[self._title_loc]
         self._alignment = alignment
@@ -386,8 +397,7 @@ class ListLegend(Legend):
         if title_loc in ["bottom", "right"]:
             # if title_loc in ["bottom", "right"]:
             children = children[::-1]
-        self._legend_box = packer(pad=pad, sep=sep,
-                                  align=alignment, children=children)
+        self._legend_box = packer(pad=pad, sep=sep, align=alignment, children=children)
 
         self._legend_box.figure = self.figure
         self._legend_box.axes = self.axes
@@ -440,18 +450,19 @@ class CatLegend(ListLegend):
 
     """
 
-    def __init__(self,
-                 ax=None,
-                 colors=None,
-                 labels=None,
-                 size=1,
-                 handle=None,
-                 handler_kw=None,
-                 fill=True,
-                 **kwargs
-                 ):
+    def __init__(
+        self,
+        ax=None,
+        colors=None,
+        labels=None,
+        size=1,
+        handle=None,
+        handler_kw=None,
+        fill=True,
+        **kwargs,
+    ):
         if handle is None:
-            handle = 'square'
+            handle = "square"
         if handler_kw is None:
             handler_kw = {}
         if len(colors) != len(labels):
@@ -477,8 +488,7 @@ class CatLegend(ListLegend):
         )
         options = {**options, **kwargs}
 
-        super().__init__(legend_items=legend_items,
-                         **options)
+        super().__init__(legend_items=legend_items, **options)
 
     @staticmethod
     def _get_default_handle_option(handle, fill, color):
@@ -486,8 +496,11 @@ class CatLegend(ListLegend):
             return {"color": color}
         else:
             if fill:
-                return {'fc': color, 'ec': color}
-            return {'fc': 'none', 'ec': color, }
+                return {"fc": color, "ec": color}
+            return {
+                "fc": "none",
+                "ec": color,
+            }
 
 
 # Modified from mpl.collections.PathCollection.legend_elements
@@ -552,7 +565,7 @@ class SizeLegend(ListLegend):
 
         >>> array = sizes * 10
         >>> _, ax = plt.subplots(figsize=(1, 1.5)); ax.set_axis_off()
-        >>> size_legend(sizes, array=array, 
+        >>> size_legend(sizes, array=array,
         ...             show_at=[.2, .4, .6, .8, 1.],
         ...             colors=['r', 'r', '.5', '.5', 'g'],
         ...             handler_kw=dict(ec='orange'))
@@ -560,32 +573,31 @@ class SizeLegend(ListLegend):
 
     """
 
-    def __init__(self,
-                 sizes,
-                 *,
-                 ax=None,
-                 labels=None,
-                 array=None,
-                 colors=None,
-                 fmt=None,  # label
-                 func=lambda x: x,  # label
-                 num_handle=4,
-                 show_at=None,
-                 spacing="percentile",
-                 handle="circle",
-                 handler_kw=None,
-                 fill=True,
-                 **kwargs
-                 ):
-
+    def __init__(
+        self,
+        sizes,
+        *,
+        ax=None,
+        labels=None,
+        array=None,
+        colors=None,
+        fmt=None,  # label
+        func=lambda x: x,  # label
+        num_handle=4,
+        show_at=None,
+        spacing="percentile",
+        handle="circle",
+        handler_kw=None,
+        fill=True,
+        **kwargs,
+    ):
         size_handles = []
         size_labels = []
 
         sizes = np.asarray(sizes).flatten()
         array = sizes if array is None else np.asarray(array).flatten()
         if sizes.size != array.size:
-            raise ValueError("The length of size array "
-                             "does not match data array")
+            raise ValueError("The length of size array does not match data array")
         sort_ix = np.argsort(sizes)
         sizes = sizes[sort_ix]
         array = array[sort_ix]
@@ -620,7 +632,9 @@ class SizeLegend(ListLegend):
             n = min(num_handle, len(ticks))
             ix = np.round(np.linspace(0, len(ticks) - 1, n)).astype(int)
             handle_labels = ticks[np.unique(ix)]
-            handle_sizes = np.interp(handle_labels, [func(amin), func(amax)], [smin, smax])
+            handle_sizes = np.interp(
+                handle_labels, [func(amin), func(amax)], [smin, smax]
+            )
         else:
             show_at = np.asarray(show_at)
             if np.any(show_at < 0) or np.any(show_at > 1):
@@ -639,7 +653,7 @@ class SizeLegend(ListLegend):
 
         num_entry = len(handle_labels)
         if colors is None:
-            handle_colors = ['black' for _ in range(num_entry)]
+            handle_colors = ["black" for _ in range(num_entry)]
         elif is_color_like(colors):
             handle_colors = [colors for _ in range(num_entry)]
         else:
@@ -667,22 +681,25 @@ class SizeLegend(ListLegend):
         # When fmt was not specified, use {:g} so whole-number floats like
         # 10.0 display as "10" rather than "10.0".
         if _auto_fmt and np.issubdtype(handle_labels.dtype, np.floating):
-            _label_fmt = lambda v: f"{v:g}"
+
+            def _fmt(v):
+                return f"{v:g}"
+
+            _label_fmt = _fmt
         else:
             _label_fmt = fmt
 
-        for i, (s, label, color) in enumerate(zip(handle_sizes,
-                                                  handle_labels,
-                                                  handle_colors)):
+        for i, (s, label, color) in enumerate(
+            zip(handle_sizes, handle_labels, handle_colors)
+        ):
             if fill:
-                options = {'mec': color, 'mfc': color,
-                           'mew': .75, **handler_kw}
+                options = {"mec": color, "mfc": color, "mew": 0.75, **handler_kw}
             else:
-                options = {'mec': color, 'mfc': 'none',
-                           'mew': .75, **handler_kw}
+                options = {"mec": color, "mfc": "none", "mew": 0.75, **handler_kw}
             ms = MarkerStyle(marker=marker)
-            size_handles.append(Line2D([0], [0], ls="", marker=ms,
-                                       markersize=np.sqrt(s), **options))
+            size_handles.append(
+                Line2D([0], [0], ls="", marker=ms, markersize=np.sqrt(s), **options)
+            )
             if labels is not None:
                 size_labels.append(labels[i])
             else:
@@ -698,8 +715,4 @@ class SizeLegend(ListLegend):
         )
         options = {**options, **kwargs}
 
-        super().__init__(
-            ax=ax,
-            handles=size_handles,
-            labels=size_labels,
-            **options)
+        super().__init__(ax=ax, handles=size_handles, labels=size_labels, **options)

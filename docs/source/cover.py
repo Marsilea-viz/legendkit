@@ -3,93 +3,101 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import Normalize
 
-from legendkit import legend, cat_legend, colorbar, colorart, hstack, vstack, size_legend
+from legendkit import (
+    cat_legend,
+    colorart,
+    legend,
+    paired_size_legend,
+    size_legend,
+    hstack,
+    vstack,
+)
 
-mpl.rcParams['legend.handleheight'] = 1
-mpl.rcParams['legend.handlelength'] = 1
-mpl.rcParams['legend.labelspacing'] = .3
+mpl.rcParams["legend.handleheight"] = 1
+mpl.rcParams["legend.handlelength"] = 1
+mpl.rcParams["legend.labelspacing"] = 0.3
+mpl.rcParams["legend.fontsize"] = 8
+mpl.rcParams["legend.title_fontsize"] = 9
 
-legend_items = [
-    ('square', 'L1', {'color': "#e76f51"}),
-    ('circle', 'L2', {'color': "#2a9d8f"}),
-    ('triangle', 'L3', {'color': "#e9c46a"}),
-]
-
-fig, ax = plt.subplots(figsize=(5.5, 6))
-legend1 = legend(legend_items=legend_items,
-                 title="Title Left",
-                 alignment="left")
-legend2 = legend(legend_items=legend_items,
-                 title="Title Center",
-                 alignment="center")
-legend3 = legend(legend_items=legend_items,
-                 title="Title Right",
-                 alignment="right")
-
-s1 = hstack([legend1, legend2, legend3], spacing=30,
-            title="Stack Horizontally")
-
-legend1 = legend(legend_items=legend_items, title="Title Top",
-                 title_loc="top", alignment="left")
-legend2 = legend(legend_items=legend_items, title="Title Bottom",
-                 title_loc="bottom", alignment="left")
-legend3 = legend(legend_items=legend_items, title="Title Right",
-                 title_loc="right", ncol=3)
-legend4 = legend(legend_items=legend_items, title="Title Left",
-                 title_loc="left", ncol=3)
-
-hs = hstack([legend1, legend2], spacing=30)
-vs = vstack([legend3, legend4], spacing=20)
-
-s2 = vstack([hs, vs],
-            spacing=20, align="center",
-            title="Stack Vertically")
-
-s3 = vstack([s1, s2], spacing=30, frameon=True, align="center",
-            loc="upper left",
-            title="Stack of Stacks of legends", ax=ax,
-            title_fontproperties={"fontsize": 14, "fontweight": 600,
-                                  "color": "#0089A7"})
+CAT4 = ["#7A76C2", "#f62196", "#18c0c4", "#f3907e"]
+CAT2 = CAT4[:2]
+ACCENT = "#0089A7"
+TITLE_KW = {"fontsize": 8, "fontweight": 600}
+TITLE_FP = {"size": 8, "weight": 600}
 
 norm = Normalize(vmin=0, vmax=10)
+sizes = np.array([10, 40, 100])
 
-colorbar(ax=ax, norm=norm,
-         orientation="horizontal",
-         title="Colorbar", alignment="left",
-         loc="upper left", bbox_to_anchor=(1, 0.4),
-         bbox_transform=ax.transAxes)
-
-colorbar(ax=ax, norm=norm,
-         orientation="horizontal",
-         shape="ellipse", cmap="RdBu",
-         title="Ellipse Colorbar", alignment="left",
-         loc="upper left", bbox_to_anchor=(1, 0.2),
-         bbox_transform=ax.transAxes)
-
-colorbar(ax=ax, norm=norm,
-         orientation="horizontal",
-         shape="triangle", cmap="PuRd",
-         title="Triangle Colorbar", alignment="left",
-         loc="upper left", bbox_to_anchor=(1.4, 0.4),
-         bbox_transform=ax.transAxes)
-
-colorbar(ax=ax, norm=norm,
-         orientation="horizontal",
-         shape="trapezoid", cmap="coolwarm",
-         title="Trapezoid Colorbar", alignment="left",
-         loc="upper left", bbox_to_anchor=(1.4, 0.2),
-         bbox_transform=ax.transAxes)
-
-args = dict(
-    colors=["#A7D2CB", "#F2D388", "#A7D2CB", "#F2D388"],
-    labels=["Item 1", "Item 2", "Item 3", "Item 4"],
-)
-legend1 = cat_legend(**args, title="Category", handle="circle")
-legend2 = size_legend(sizes=np.arange(1, 401), title="Size", handle="circle")
-cart = colorart(norm=norm, cmap="cool", ax=ax, title="Colorart")
-hstack([legend1, legend2, cart], spacing=20, title="Stack colorbar and legend",
-       alignment="left",
-       loc="upper left", bbox_to_anchor=(1, 1), bbox_transform=ax.transAxes,
-       frameon=True, ax=ax, padding=2)
-
+fig, ax = plt.subplots(figsize=(3, 3))
 ax.set_axis_off()
+T = ax.transAxes
+
+_cat = cat_legend(
+    colors=CAT4,
+    labels=["Alpha", "Beta", "Gamma", "Delta"],
+    handle="circle",
+    title="category",
+    title_fontproperties=TITLE_FP,
+    draw=False,
+)
+_leg = legend(
+    legend_items=[
+        ("square", "L1", {"color": CAT4[0]}),
+        ("circle", "L2", {"color": CAT4[1]}),
+        ("triangle", "L3", {"color": CAT4[2]}),
+        ("line", "L4", {"color": CAT4[3]}),
+    ],
+    title="legend",
+    title_fontproperties=TITLE_FP,
+    draw=False,
+)
+_siz = size_legend(
+    sizes,
+    num_handle=3,
+    handle="circle",
+    colors=[ACCENT] * len(sizes),
+    title="size",
+    title_fontproperties=TITLE_FP,
+    draw=False,
+)
+_normal_legs = hstack([_cat, _leg, _siz], spacing=8)
+_ph = paired_size_legend(
+    sizes,
+    orientation="horizontal",
+    fill_between=True,
+    fill_between_alpha=0.65,
+    color=ACCENT,
+    title="size",
+    title_fontproperties=TITLE_KW,
+    draw=False,
+)
+_pv = paired_size_legend(
+    sizes,
+    orientation="vertical",
+    fill_between=True,
+    fill_between_alpha=0.65,
+    color=CAT4[1],
+    label_loc="right",
+    title="size",
+    title_fontproperties=TITLE_KW,
+    draw=False,
+)
+_paired_legs = hstack([_ph, _pv], spacing=8)
+
+_cr = colorart(
+    norm=norm,
+    cmap="viridis",
+    ax=ax,
+    orientation="horizontal",
+    title="colorbar",
+    title_fontproperties=TITLE_KW,
+)
+
+_vs = vstack(
+    [_normal_legs, _paired_legs, _cr],
+    title="What's in legendkit?",
+    spacing=8,
+    title_fontproperties=TITLE_KW,
+    align="center",
+    ax=ax,
+)

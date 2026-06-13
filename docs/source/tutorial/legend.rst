@@ -103,3 +103,11 @@ So you don't need to configure it over and over again.
     ...     size_legend(sizes=np.arange(1, 101, 1), handle=handle, ax=ax)
 
 
+.. plot::
+    :context: close-figs
+
+    >>> from legendkit import paired_size_legend
+    >>> _, ax = plt.subplots(figsize=(1, 1)); ax.set_axis_off()
+    >>> paired_size_legend(sizes=[10, 100], color="#FA6868", ax=ax)
+
+

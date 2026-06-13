@@ -28,6 +28,7 @@ def make_mappable(cmap="RdBu", norm=None):
 # Basic construction
 # ------------------------------------------------------------------
 
+
 def test_colorbar_basic():
     ax, m = make_mappable()
     cb = colorbar(m, ax=ax)
@@ -50,6 +51,7 @@ def test_colorbar_title():
 # Style
 # ------------------------------------------------------------------
 
+
 def test_colorbar_style_white():
     ax, m = make_mappable()
     cb = colorbar(m, ax=ax, style="white")
@@ -66,6 +68,7 @@ def test_colorbar_style_normal():
 # Shape
 # ------------------------------------------------------------------
 
+
 @pytest.mark.parametrize("shape", ["rect", "ellipse", "triangle", "trapezoid"])
 def test_colorbar_shapes(shape):
     ax, m = make_mappable()
@@ -77,6 +80,7 @@ def test_colorbar_shapes(shape):
 # Orientation
 # ------------------------------------------------------------------
 
+
 def test_colorbar_vertical():
     ax, m = make_mappable()
     cb = colorbar(m, ax=ax, orientation="vertical")
@@ -85,8 +89,7 @@ def test_colorbar_vertical():
 
 def test_colorbar_horizontal():
     ax, m = make_mappable()
-    cb = colorbar(m, ax=ax, orientation="horizontal",
-                  loc="out upper center")
+    cb = colorbar(m, ax=ax, orientation="horizontal", loc="out upper center")
     assert cb is not None
 
 
@@ -94,12 +97,24 @@ def test_colorbar_horizontal():
 # Location
 # ------------------------------------------------------------------
 
-@pytest.mark.parametrize("loc", [
-    "out right upper", "out right center", "out right lower",
-    "out upper left", "out upper center", "out upper right",
-    "out lower left", "out lower center", "out lower right",
-    "out left upper", "out left center", "out left lower",
-])
+
+@pytest.mark.parametrize(
+    "loc",
+    [
+        "out right upper",
+        "out right center",
+        "out right lower",
+        "out upper left",
+        "out upper center",
+        "out upper right",
+        "out lower left",
+        "out lower center",
+        "out lower right",
+        "out left upper",
+        "out left center",
+        "out left lower",
+    ],
+)
 def test_colorbar_loc(loc):
     ax, m = make_mappable()
     cb = colorbar(m, ax=ax, loc=loc)
@@ -109,6 +124,7 @@ def test_colorbar_loc(loc):
 # ------------------------------------------------------------------
 # Width / height
 # ------------------------------------------------------------------
+
 
 def test_colorbar_custom_size():
     ax, m = make_mappable()
@@ -132,6 +148,7 @@ def test_colorbar_only_height():
 # BoundaryNorm
 # ------------------------------------------------------------------
 
+
 def test_colorbar_boundary_norm():
     bounds = [0, 0.2, 0.5, 0.8, 1.0]
     norm = BoundaryNorm(bounds, ncolors=4)
@@ -144,8 +161,10 @@ def test_colorbar_boundary_norm():
 # title_fontproperties
 # ------------------------------------------------------------------
 
+
 def test_colorbar_title_fontproperties():
     ax, m = make_mappable()
-    cb = colorbar(m, ax=ax, title="T",
-                  title_fontproperties={"weight": "normal", "size": "small"})
+    cb = colorbar(
+        m, ax=ax, title="T", title_fontproperties={"weight": "normal", "size": "small"}
+    )
     assert cb is not None

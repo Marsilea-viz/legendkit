@@ -17,6 +17,7 @@ Examples
 
 
 """
+
 from abc import ABC
 
 from matplotlib.collections import Collection
@@ -26,16 +27,19 @@ from matplotlib.patches import Patch
 
 class SquareItem(Patch, ABC):
     """Ensure render as square"""
+
     pass
 
 
 class RectItem(Patch, ABC):
     """Ensure render as rectangle"""
+
     pass
 
 
 class CircleItem(Patch, ABC):
     """Create circle for legend handles"""
+
     pass
 
 
@@ -50,8 +54,8 @@ class BoxplotItem(Collection, ABC):
     """Create boxplot for legend handles"""
 
     def __init__(self, *args, **kwargs):
-        user_ec = kwargs.get('ec')
-        user_edgecolor = kwargs.get('edgecolor')
+        user_ec = kwargs.get("ec")
+        user_edgecolor = kwargs.get("edgecolor")
         if (user_ec is None) & (user_edgecolor is None):
-            kwargs['ec'] = "black"
+            kwargs["ec"] = "black"
         super().__init__(*args, **kwargs)

@@ -438,9 +438,7 @@ class PairedSizeLegend(Artist):
             # both centers share y = d_max/2 (so big circle fits)
             cy = d_max / 2
             c1 = np.array([first_r, cy])
-            c2 = np.array(
-                [first_r + gap + 2 * second_r if False else first_r + center_dist, cy]
-            )
+            c2 = np.array([first_r + center_dist, cy])
             # width / height of drawing canvas
             da_w = c2[0] + second_r
             da_h = d_max

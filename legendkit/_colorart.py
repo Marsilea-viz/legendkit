@@ -447,6 +447,11 @@ class ColorArt(Artist):
                     )
 
         patches = PatchCollection(rects, match_original=True)
+        # Styles that set patch.force_edgecolor (e.g. seaborn) stroke every
+        # gradient strip with a 1pt edge. A strip is only ~0.4pt tall, so the
+        # edge covers the fill and the whole colorart renders blank.
+        patches.set_edgecolor("none")
+        patches.set_linewidth(0)
         if self._rasterized:
             patches.set_rasterized(True)
         canvas.add_artist(patches)

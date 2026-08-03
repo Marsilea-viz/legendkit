@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.collections import PatchCollection
 from matplotlib.colors import BoundaryNorm, LogNorm
 
 from legendkit import colorart
@@ -192,3 +193,29 @@ def test_colorart_remove():
     ax, m = make_mappable()
     ca = colorart(m, ax=ax)
     ca.remove()  # should not raise
+
+
+# ------------------------------------------------------------------
+# gradient rendering
+# ------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("orientation", ["vertical", "horizontal"])
+def test_colorart_gradient_ignores_force_edgecolor(orientation):
+    # seaborn styles set patch.force_edgecolor, which strokes every ~0.4pt
+    # gradient strip with a 1pt edge and blanks the whole colorart
+    with plt.rc_context(
+        {
+            "patch.force_edgecolor": True,
+            "patch.edgecolor": "w",
+            "patch.linewidth": 1.0,
+        }
+    ):
+        ax, m = make_mappable()
+        ca = colorart(m, ax=ax, orientation=orientation)
+
+    patches = ca._cbar_box.findobj(PatchCollection)[0]
+    assert len(patches.get_edgecolor()) == 0  # "none"
+    assert np.all(np.asarray(patches.get_linewidth()) == 0)
+    # the fills are what draws the gradient, they must stay opaque
+    assert np.all(patches.get_facecolor()[:, 3] > 0)

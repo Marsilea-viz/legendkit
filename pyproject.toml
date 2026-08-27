@@ -47,7 +47,7 @@ include = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["legendkit", "README.md", "LICENSE", "pyproject.toml"]
+packages = ["legendkit"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
